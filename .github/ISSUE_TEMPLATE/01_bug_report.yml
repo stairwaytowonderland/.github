@@ -1,0 +1,68 @@
+name: 🐞 Bug Report
+description: Report a bug or unexpected behavior
+title: '[BUG] <short summary>'
+labels: [bug]
+type: bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Bug Report
+        Please describe the bug and how to reproduce it.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What is the bug? What did you expect to happen?
+      placeholder: Describe the bug in detail.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: List the steps to reproduce the bug.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: Describe the expected behavior.
+    validations:
+      required: false
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: Describe what actually happened.
+    validations:
+      required: false
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - High
+        - Medium
+        - Low
+      description: How urgent is this bug?
+    validations:
+      required: false
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Estimated Effort
+      options:
+        - Small
+        - Medium
+        - Large
+      description: How much effort do you estimate this will take to fix?
+    validations:
+      required: false

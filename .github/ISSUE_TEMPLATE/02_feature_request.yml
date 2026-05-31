@@ -1,0 +1,41 @@
+name: ✨ Feature Request
+description: Suggest a new feature or improvement
+title: '[FEATURE] <short summary>'
+labels: [enhancement]
+type: feature
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Feature Request
+        Please describe the feature or improvement you would like to see.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What problem does this feature solve? What is the desired outcome?
+      placeholder: Describe the feature or improvement in detail.
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - High
+        - Medium
+        - Low
+      description: How important is this feature?
+    validations:
+      required: false
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Estimated Effort
+      options:
+        - Small
+        - Medium
+        - Large
+      description: How much effort do you estimate this will take?
+    validations:
+      required: false

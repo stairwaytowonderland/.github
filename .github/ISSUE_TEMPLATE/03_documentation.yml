@@ -1,0 +1,42 @@
+name: 📚 Documentation Request
+description: Report a documentation problem or request
+title: '[DOCUMENTATION] <short summary>'
+labels: [documentation]
+type: documentation
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the documentation issue or request
+      description: A clear and concise description of what is missing, unclear, or
+        incorrect in the documentation.
+      placeholder: e.g. The setup instructions for AWS are missing a required step.
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Location of the documentation
+      description: Provide a link or file path to the relevant documentation section,
+        if applicable.
+      placeholder: e.g. docs/README.md#aws-setup
+    validations:
+      required: false
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested fix or improvement
+      description: If you have a suggestion for how to fix or improve the
+        documentation, please describe it here.
+      placeholder: e.g. Add a step to configure AWS credentials before running terraform.
+    validations:
+      required: false
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add any other context, screenshots, or examples that might help
+        clarify the issue.
+      placeholder: e.g. Screenshot of the error message.
+    validations:
+      required: false

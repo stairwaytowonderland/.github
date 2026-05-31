@@ -1,0 +1,9 @@
+# GitHub Issue Forms configuration
+blank_issues_enabled: false
+contact_links:
+  - name: Project Documentation
+    url: https://github.com/octocat/Hello-World/wiki
+    about: Please check the project documentation for common questions.
+  # - name: Security Policy
+  #   url: https://github.com/octocat/Hello-World/security/policy
+  #   about: Please report security vulnerabilities here.
