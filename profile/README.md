@@ -2,23 +2,6 @@
 
 The [**stairwaytowonderland**](https://github.com/stairwaytowonderland) org public doc.
 
-## Shared Actions & Workflows Monorepo
-
-For internal use.
-
-### [**stairwaytowonderland / actions**](https://github.com/stairwaytowonderland/actions)
-
-> Shared actions and workflows for use by the organization.
-
-This **shared repository** contains actions and workflows to assist in:
-
-- [**issue creation**](https://github.com/stairwaytowonderland/actions#import-csv-issues) *(workflow)*
-- [**terraform deployments**](https://github.com/stairwaytowonderland/actions#terraform-deploy) *(workflow)*
-- [**releasing new versions**](https://github.com/stairwaytowonderland/actions#release) *(workflow)*
-- [**publishing releases**](https://github.com/stairwaytowonderland/actions#publish) *(workflow)*
-- [**running pre-commit**](https://github.com/stairwaytowonderland/actions#pre-commit) *(workflow)*
-- [**validating conventional commits**](https://github.com/stairwaytowonderland/actions#conventional-commit) *(workflow)*
-
 ## General Repository Creation
 
 ### [create-repository](https://github.com/stairwaytowonderland/create-repository/actions/workflows/create-repository.yaml)
@@ -72,3 +55,20 @@ This **shared repository** contains actions and workflows to assist in:
 A **production-ready**, self-maintained Python Docker image that builds [CPython](https://github.com/python/cpython) from source on top of a Debian-based (Debian or Ubuntu) base image.
 
 Designed for use as a lightweight, customizable Python runtime in container-based apps and workflows.
+
+## Shared Actions & Workflows Monorepo
+
+Monorepo for internal use.
+
+### [**stairwaytowonderland / actions**](https://github.com/stairwaytowonderland/actions)
+
+> Shared actions and workflows for use by the organization.
+
+This **shared repository** contains actions and workflows to assist in:
+
+- [**issue creation**](https://github.com/stairwaytowonderland/actions#import-csv-issues) *(workflow)*
+- [**terraform deployments**](https://github.com/stairwaytowonderland/actions#terraform-deploy) *(workflow)*
+- [**releasing new versions**](https://github.com/stairwaytowonderland/actions#release) *(workflow)*
+- [**publishing releases**](https://github.com/stairwaytowonderland/actions#publish) *(workflow)*
+- [**running pre-commit**](https://github.com/stairwaytowonderland/actions#pre-commit) *(workflow)*
+- [**validating conventional commits**](https://github.com/stairwaytowonderland/actions#conventional-commit) *(workflow)*
