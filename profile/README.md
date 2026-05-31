@@ -62,3 +62,13 @@ This **shared repository** contains actions and workflows to assist in:
 ### [cloudflare-email-worker-iac](https://github.com/stairwaytowonderland/cloudflare-email-worker-iac) *(template)*
 
 > A Cloudflare Email Worker Terraform Example 🚀
+
+## Docker Images
+
+### [cpython](https://github.com/stairwaytowonderland/cpython) *(production-ready)*
+
+> Self-maintained Python docker image project 🐍
+
+A **production-ready**, self-maintained Python Docker image that builds [CPython](https://github.com/python/cpython) from source on top of a Debian-based (Debian or Ubuntu) base image.
+
+Designed for use as a lightweight, customizable Python runtime in container-based apps and workflows.
