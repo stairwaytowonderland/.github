@@ -16,8 +16,7 @@ Public organization info.
 │   │   ├── 03_documentation.yml
 │   │   ├── 04_task.yml
 │   │   └── config.yml
-│   └── PULL_REQUEST_TEMPLATE/
-│       └── pull_request_template.md
+│   └── PULL_REQUEST_TEMPLATE.md
 ├── profile/
 │   └── README.md
 ├── .gitignore
