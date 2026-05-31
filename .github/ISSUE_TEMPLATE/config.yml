@@ -2,8 +2,14 @@
 blank_issues_enabled: false
 contact_links:
   - name: Project Documentation
-    url: https://github.com/octocat/Hello-World/wiki
+    url: https://github.com/stairwaytowonderland/.github/wiki
     about: Please check the project documentation for common questions.
-  # - name: Security Policy
-  #   url: https://github.com/octocat/Hello-World/security/policy
-  #   about: Please report security vulnerabilities here.
+  - name: Contribution Guidelines
+    url: https://github.com/stairwaytowonderland/.github/blob/main/CONTRIBUTING.md
+    about: Please read the contribution guidelines before submitting issues or pull requests.
+  - name: Code of Conduct
+    url: https://github.com/stairwaytowonderland/.github/blob/main/CODE_OF_CONDUCT.md
+    about: Please read the code of conduct before participating in the project.
+  - name: Security Policy
+    url: https://github.com/stairwaytowonderland/.github/security/policy
+    about: Please report security vulnerabilities here.
