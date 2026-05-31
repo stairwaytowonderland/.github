@@ -142,13 +142,6 @@ For more details on how to configure and use pre-commit, please refer to the off
 - Add alt text to images: `![Description](image.png)`
 - Use relative links for internal references
 
-### File Organization
-
-- **[folder1]/**: [Description]
-- **[folder2]/**: [Description]
-- **[folder3]/**: [Description]
-- **[folder4]/**: [Description]
-
 ### Naming Conventions
 
 - Use lowercase with hyphens: `client-proposal-template.md`
