@@ -173,14 +173,6 @@ Before submitting a PR, ensure:
 
 ## License and Attribution
 
-Projects should contain appropriate licenses and attributions.
-
-For example, if using an [MIT License](https://choosealicense.com/licenses/mit/), create an appropriate `LICENSE` file, and place something like the following in your main `README.md` file.
-
-> ```md
-> ## License and Attribution
->
-> This project is licensed under the [MIT License](./LICENSE). By contributing, you agree that your contributions will be licensed under the same terms.
-> ```
+By contributing, you agree that your contributions will be licensed under the same terms as the project [LICENSE](./LICENSE).
 
 See [Licensing a repository](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository) for more information.
