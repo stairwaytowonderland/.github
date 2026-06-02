@@ -166,9 +166,10 @@ Before submitting a PR, ensure:
 
 ## Getting Help
 
-- **[Question Label]**: Open an issue with the [question] label
-- **[Suggestion Label]**: Open an issue with the [enhancement] label
-- **[Problem Label]**: Open an issue with the [bug] label
+- **Question**: Open an issue with the https://github.com/stairwaytowonderland/.github/labels/question label
+- **Suggestion**: Open an issue with the https://github.com/stairwaytowonderland/.github/labels/enhancement label
+- **Problem**: Open an issue with the https://github.com/stairwaytowonderland/.github/labels/bug label
+- **Security Problem or Suggestion**: Open an issue with the https://github.com/stairwaytowonderland/.github/labels/security label
 
 ## License and Attribution
 
