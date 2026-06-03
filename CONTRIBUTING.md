@@ -91,9 +91,9 @@ To install `pre-commit`, you can use `pip`:
 > **Typically, *'path/to/venv'* is *'.venv'* in the current directory: `python3 -m venv .venv`**
 >
 > Run `deactivate` to deactivate the *virtual environment*.
-
-Please see the [official documentation](https://packaging.python.org/en/latest/tutorials/installing-packages/#optionally-create-a-virtual-environment)
-for more information.
+>
+> *Please see the [**official documentation**](https://packaging.python.org/en/latest/tutorials/installing-packages/#optionally-create-a-virtual-environment)
+for more information.*
 
 ```bash
 pip3 install pre-commit
