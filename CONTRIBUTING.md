@@ -10,15 +10,12 @@ our workflow and best practices when contributing to repositories.
 Always create a new branch for your work:
 
 ```bash
-git checkout -b feature/descriptive-name
+git checkout -b feat/descriptive-name
 ```
 
-Branch naming conventions:
-
-- `feature/` - New documentation or materials
-- `update/` - Updates to existing content
-- `fix/` - Corrections or bug fixes
-- `template/` - New or updated templates
+> [!NOTE]
+>
+> See [Branch naming conventions](#branch-naming-conventions) for more information.
 
 ### 2. Make Your Changes
 
@@ -26,21 +23,29 @@ Branch naming conventions:
 - Keep related changes together in a single commit
 - Document important decisions
 
+> [!NOTE]
+>
+> See [Code style guidelines](#code-style-guidelines) for more information.
+
 ### 3. Commit Messages
 
 Use clear, descriptive commit messages:
 
 ```none
 Good examples:
-- "Add client presentation template"
-- "Update project status for Q4 initiatives"
-- "Fix typos in onboarding documentation"
+- "feat: Add client presentation template"
+- "chore: Update project status for Q4 initiatives"
+- "docs: Fix typos in onboarding documentation"
 
 Avoid:
 - "Updates"
 - "Changes"
 - "Fix stuff"
 ```
+
+> [!NOTE]
+>
+> See [Commit message guidelines](#commit-message-guidelines) for more information.
 
 ### 4. Push and Create Pull Request
 
@@ -163,6 +168,28 @@ Before submitting a PR, ensure:
 - [ ] No final deliverable files are included
 - [ ] Commit messages are clear and descriptive
 - [ ] PR description explains the changes
+
+## Branch naming conventions
+
+### Basic Rules
+
+1. **Lowercase and Hyphen-separated:** Stick to lowercase for branch names and use hyphens to separate words. For instance, feature/new-login or bugfix/header-styling.
+1. **Alphanumeric Characters:** Use only alphanumeric characters (a-z, A-Z, 0–9) and hyphens. Avoid punctuation, spaces, underscores, or any non-alphanumeric character.
+1. **No Continuous Hyphens:** Do not use continuous hyphens. feature--new-login can be confusing and hard to read.
+1. **No Trailing Hyphens:** Do not end your branch name with a hyphen. For example, feature-new-login- is not a good practice.
+1. **Descriptive:** The name should be descriptive and concise, ideally reflecting the work done on the branch.
+
+### Branch prefixes
+
+1. **Feature Branches:** These branches are used for developing new features. Use the prefix `feature/`. For instance, `feat/login-system`.
+1. **Bug-fix Branches:** These branches are used to fix bugs in the code. Use the prefix `fix/`. For example, `fix/header-styling`.
+1. **Documentation Branches:** These branches are used to write, update, or fix documentation eg. the README.md file. Use the prefix `docs/`. For instance, `docs/api-endpoints`.
+
+### Examples
+
+1. `feat/T-456-user-authentication`
+1. `fix/T-789-fix-header-styling`
+1. `docs/T-654-update-readme`
 
 ## Getting Help
 
