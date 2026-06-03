@@ -197,12 +197,12 @@ Use the prefix `docs/`. For instance, `docs/api-endpoints`.
 
 ## Getting Help
 
-- **Question**: Open an issue with the <https://github.com/stairwaytowonderland/.github/labels>
-question label
-- **Suggestion**: Open an issue with the <https://github.com/stairwaytowonderland/.github/labels>
-enhancement label
-- **Problem**: Open an issue with the <https://github.com/stairwaytowonderland/.github/labels>
-bug label
+- **Question**: Open an issue with the <https://github.com/stairwaytowonderland/.github/labels/question>
+label
+- **Suggestion**: Open an issue with the <https://github.com/stairwaytowonderland/.github/labels/enhancement>
+label
+- **Problem**: Open an issue with the <https://github.com/stairwaytowonderland/.github/labels/bug>
+label
 - **Security Problem or Suggestion**: Open an issue with the <https://github.com/stairwaytowonderland/.github/labels/security>
 label
 
