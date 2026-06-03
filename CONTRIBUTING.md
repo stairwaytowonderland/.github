@@ -1,6 +1,7 @@
 # Contributing Guidelines
 
-Thank you for contributing to the [**stairwaytowonderland**](https://github.com/stairwaytowonderland) organization! This guide will help you understand
+Thank you for contributing to the [**stairwaytowonderland**](https://github.com/stairwaytowonderland) organization!
+This guide will help you understand
 our workflow and best practices when contributing to repositories.
 
 ## Workflow
@@ -125,13 +126,12 @@ For more details on how to configure and use pre-commit, please refer to the off
   "build",
   "chore",
   "ci",
-  "debug",
   "docs",
   "feat",
   "fix",
   "perf",
   "refactor",
-  "remove",
+  "revert",
   "style",
   "test"
 ]
@@ -155,7 +155,8 @@ For more details on how to configure and use pre-commit, please refer to the off
 
 ## What NOT to Commit
 
-The [`.gitignore`](./.gitignore) file prevents unnecessary from being committed.
+The `.gitignore` file prevents unnecessary from being committed. If your project doesn't contain one, copy the
+organization [`.gitignore`](./.gitignore) as a startng point.
 
 ## Review Checklist
 
@@ -173,8 +174,10 @@ Before submitting a PR, ensure:
 
 ### Basic Rules
 
-1. **Lowercase and Hyphen-separated:** Stick to lowercase for branch names and use hyphens to separate words. For instance, feature/new-login or bugfix/header-styling.
-1. **Alphanumeric Characters:** Use only alphanumeric characters (a-z, A-Z, 0–9) and hyphens. Avoid punctuation, spaces, underscores, or any non-alphanumeric character.
+1. **Lowercase and Hyphen-separated:** Stick to lowercase for branch names and use hyphens to separate words. For instance,
+feature/new-login or bugfix/header-styling.
+1. **Alphanumeric Characters:** Use only alphanumeric characters (a-z, A-Z, 0–9) and hyphens. Avoid punctuation, spaces,
+underscores, or any non-alphanumeric character.
 1. **No Continuous Hyphens:** Do not use continuous hyphens. feature--new-login can be confusing and hard to read.
 1. **No Trailing Hyphens:** Do not end your branch name with a hyphen. For example, feature-new-login- is not a good practice.
 1. **Descriptive:** The name should be descriptive and concise, ideally reflecting the work done on the branch.
@@ -183,7 +186,8 @@ Before submitting a PR, ensure:
 
 1. **Feature Branches:** These branches are used for developing new features. Use the prefix `feature/`. For instance, `feat/login-system`.
 1. **Bug-fix Branches:** These branches are used to fix bugs in the code. Use the prefix `fix/`. For example, `fix/header-styling`.
-1. **Documentation Branches:** These branches are used to write, update, or fix documentation eg. the README.md file. Use the prefix `docs/`. For instance, `docs/api-endpoints`.
+1. **Documentation Branches:** These branches are used to write, update, or fix documentation eg. the README.md file.
+Use the prefix `docs/`. For instance, `docs/api-endpoints`.
 
 ### Examples
 
@@ -193,10 +197,14 @@ Before submitting a PR, ensure:
 
 ## Getting Help
 
-- **Question**: Open an issue with the https://github.com/stairwaytowonderland/.github/labels/question label
-- **Suggestion**: Open an issue with the https://github.com/stairwaytowonderland/.github/labels/enhancement label
-- **Problem**: Open an issue with the https://github.com/stairwaytowonderland/.github/labels/bug label
-- **Security Problem or Suggestion**: Open an issue with the https://github.com/stairwaytowonderland/.github/labels/security label
+- **Question**: Open an issue with the <https://github.com/stairwaytowonderland/.github/labels>
+question label
+- **Suggestion**: Open an issue with the <https://github.com/stairwaytowonderland/.github/labels>
+enhancement label
+- **Problem**: Open an issue with the <https://github.com/stairwaytowonderland/.github/labels>
+bug label
+- **Security Problem or Suggestion**: Open an issue with the <https://github.com/stairwaytowonderland/.github/labels/security>
+label
 
 ## License and Attribution
 
@@ -205,4 +213,5 @@ By contributing, you agree to the following:
 - Your contributions will be licensed under the same terms as the project **`LICENSE`**.
 - If the project **`LICENSE`** is unspecified, your contributions will be licensed under the organization's [MIT License](./LICENSE).
 
-See [Licensing a repository](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository) for more information.
+See [Licensing a repository](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository)
+for more information.
