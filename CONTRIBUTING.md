@@ -72,7 +72,7 @@ Then create a pull request on GitHub with:
 ### Code Style Guidelines
 
 - Ensure your code is well-commented and self-documenting.
-- The project enforces code formatting through its [pre-commits](.pre-commit-config.yaml) configuration.
+- The project enforces code formatting through its [pre-commit](.pre-commit-config.yaml) configuration.
   Do **NOT** turn off this feature and make sure your `pre-commit run` command works successfully
   (see [below](#pre-commit) for more details).
 
@@ -215,3 +215,6 @@ By contributing, you agree to the following:
 
 See [Licensing a repository](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository)
 for more information.
+
+> [!TIP]
+> You may copy **this** file ([**`CONTRIBUTING.md`**](./CONTRIBUTING.md)) as a starting point for further customization.
