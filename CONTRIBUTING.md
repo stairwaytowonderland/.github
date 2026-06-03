@@ -22,9 +22,9 @@ Branch naming conventions:
 
 ### 2. Make Your Changes
 
-- Work in the appropriate directory ([folder1], [folder2], etc.)
 - Commit frequently with clear messages
 - Keep related changes together in a single commit
+- Document important decisions
 
 ### 3. Commit Messages
 
