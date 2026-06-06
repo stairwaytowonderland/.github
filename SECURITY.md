@@ -24,4 +24,6 @@ reported vulnerability, what to expect if the vulnerability is accepted or
 declined, etc.
 -->
 
-To report a security issue, please open an issue with the https://github.com/stairwaytowonderland/.github/labels/security label, a description of the issue, the steps you took to create the issue, affected versions, and, if known, mitigations for the issue. This project has no official disclosure timeline.
+To report a security issue, please open an issue with the <https://github.com/stairwaytowonderland/.github/labels/security>
+label, a description of the issue, the steps you took to create the issue, affected versions, and, if known, mitigations
+for the issue. This project has no official disclosure timeline.

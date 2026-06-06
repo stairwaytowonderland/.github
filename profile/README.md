@@ -20,13 +20,15 @@ The [**stairwaytowonderland**](https://github.com/stairwaytowonderland) org publ
 
 ### [python-reusable-workflows](https://github.com/stairwaytowonderland/python-reusable-workflows)
 
-> Reuseable workflows to release a Python app using semantic versioning, create a wheel package artifact, and publish a release 🚀
+> Reuseable workflows to release a Python app using semantic versioning, create a wheel package artifact, and publish a
+> release 🚀
 
 ## Marketplace Actions
 
 ### [node-semantic-release](https://github.com/stairwaytowonderland/node-semantic-release)
 
-> Marketplace Action | Builds the project with npm, runs semantic-release, and base64-encodes the release notes for safe transport.
+> Marketplace Action | Builds the project with npm, runs semantic-release, and base64-encodes the release notes for safe
+> transport.
 
 ### [repository-create](https://github.com/stairwaytowonderland/repository-create)
 
@@ -40,7 +42,8 @@ The [**stairwaytowonderland**](https://github.com/stairwaytowonderland) org publ
 
 ### [cloudflare-email-slack-worker](https://github.com/stairwaytowonderland/cloudflare-email-slack-worker)
 
-> A Cloudflare Email Worker that receives incoming emails, parses them, and sends formatted notifications to Slack via webhooks 🚀
+> A Cloudflare Email Worker that receives incoming emails, parses them, and sends formatted notifications to Slack via
+> webhooks 🚀
 
 ### [cloudflare-email-worker-iac](https://github.com/stairwaytowonderland/cloudflare-email-worker-iac) *(template)*
 
@@ -52,7 +55,8 @@ The [**stairwaytowonderland**](https://github.com/stairwaytowonderland) org publ
 
 > Self-maintained Python docker image project 🐍
 
-A **production-ready**, self-maintained Python Docker image that builds [CPython](https://github.com/python/cpython) from source on top of a Debian-based (Debian or Ubuntu) base image.
+A **production-ready**, self-maintained Python Docker image that builds [CPython](https://github.com/python/cpython) from
+source on top of a Debian-based (Debian or Ubuntu) base image.
 
 Designed for use as a lightweight, customizable Python runtime in container-based apps and workflows.
 
