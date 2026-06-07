@@ -118,7 +118,7 @@ For more details on how to configure and use pre-commit, please refer to the off
 ### Commit Message Guidelines
 
 - Write clear, concise commit messages that follow the
-  [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) standard.
+  [![conventional-commit](https://img.shields.io/badge/conventional--commit-FE5196?logo=conventionalcommits&logoColor=white)](https://www.conventionalcommits.org/)&nbsp;standard.
 - The allowed tags for this project are the following:
 
 ```json
