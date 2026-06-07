@@ -121,21 +121,21 @@ For more details on how to configure and use pre-commit, please refer to the off
   [![conventional-commit](https://img.shields.io/badge/conventional--commit-FE5196?logo=conventionalcommits&logoColor=white)](https://www.conventionalcommits.org/)&nbsp;standard.
 - The allowed tags for this project are the following:
 
-  ```json
-  [
-    "build",
-    "chore",
-    "ci",
-    "docs",
-    "feat",
-    "fix",
-    "perf",
-    "refactor",
-    "revert",
-    "style",
-    "test"
-  ]
-  ```
+    ```json
+    [
+      "build",
+      "chore",
+      "ci",
+      "docs",
+      "feat",
+      "fix",
+      "perf",
+      "refactor",
+      "revert",
+      "style",
+      "test"
+    ]
+    ```
 
 ## Content Guidelines
 
