@@ -74,9 +74,11 @@ Monorepo for internal use.
 
 This **shared repository** contains actions and workflows to assist in:
 
-- [**issue creation**](https://github.com/stairwaytowonderland/actions#import-csv-issues) *(workflow)*
-- [**terraform deployments**](https://github.com/stairwaytowonderland/actions#terraform-deploy) *(workflow)*
-- [**releasing new versions**](https://github.com/stairwaytowonderland/actions#release) *(workflow)*
-- [**publishing releases**](https://github.com/stairwaytowonderland/actions#publish) *(workflow)*
-- [**running pre-commit**](https://github.com/stairwaytowonderland/actions#pre-commit) *(workflow)*
-- [**validating conventional commits**](https://github.com/stairwaytowonderland/actions#conventional-commit) *(workflow)*
+- [**issue creation**](https://github.com/stairwaytowonderland/actions#4-issue-create-action) *(action)*
+- [**label creation**](https://github.com/stairwaytowonderland/actions#1-labels-create-action) *(action)*
+- [**label synchronization**](https://github.com/stairwaytowonderland/actions#2-labels-sync-action) *(action)*
+- [**terraform deployments**](https://github.com/stairwaytowonderland/actions#6-terraform-deploy) *(workflow)*
+- [**releasing new versions**](https://github.com/stairwaytowonderland/actions#3-release) *(workflow)*
+- [**publishing releases**](https://github.com/stairwaytowonderland/actions#4-publish) *(workflow)*
+- [**running pre-commit**](https://github.com/stairwaytowonderland/actions#2-pre-commit) *(workflow)*
+- [**validating conventional commits**](https://github.com/stairwaytowonderland/actions#1-conventional-commit) *(workflow)*
