@@ -6,11 +6,19 @@ The [**stairwaytowonderland**](https://github.com/stairwaytowonderland) org publ
 >
 > See org [owner](https://github.com/andrewhaller) profile, [gists](https://gist.github.com/andrewhaller) and [lists](https://github.com/andrewhaller?tab=stars).
 
-## General Repository Creation
+## Repository Creation & Management
 
 ### [create-repository](https://github.com/stairwaytowonderland/create-repository/actions/workflows/create-repository.yaml)
 
 > Automatically create a repository using the GitHub API
+
+### [issue-management](https://github.com/stairwaytowonderland/issue-management)
+
+> A centralized issue management repository. 🐞
+
+### [label-management](https://github.com/stairwaytowonderland/label-management)
+
+> A centralized label management repository. 🏷️
 
 ### [repository-template](https://github.com/stairwaytowonderland/repository-template) *(template)*
 
