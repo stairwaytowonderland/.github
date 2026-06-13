@@ -33,7 +33,8 @@
 		"*.lib": "shellscript",
 		"*yaml.tftpl": "jinja-yaml",
 		"*json.tftpl": "jinja-json",
-		"LICENSE": "plaintext"
+		"LICENSE": "plaintext",
+		"CODEOWNERS": "properties"
 	},
 	"files.exclude": {
 		"**/.git": true,

@@ -16,11 +16,20 @@ Public organization info.
 │   │   ├── 03_documentation.yml
 │   │   ├── 04_task.yml
 │   │   └── config.yml
+│   ├── CODEOWNERS
+│   ├── dependabot.yml
 │   └── PULL_REQUEST_TEMPLATE.md
 ├── profile/
 │   └── README.md
+├── .editorconfig
 ├── .gitignore
+├── .markdownlint.json
+├── .pre-commit-config.yaml
+├── .prettierignore
+├── .prettierrc
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
-└── README.md
+├── LICENSE
+├── README.md
+└── SECURITY.md
 ```
