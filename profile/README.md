@@ -71,7 +71,7 @@ The [**stairwaytowonderland**](https://github.com/stairwaytowonderland) org publ
 
 > :clipboard: A Cloudflare Email Worker Terraform Template.
 
-## Docker Images
+## :whale: Docker Images
 
 ### [cpython](https://github.com/stairwaytowonderland/cpython) *(production-ready)*
 
