@@ -55,7 +55,7 @@ The [**stairwaytowonderland**](https://github.com/stairwaytowonderland) org publ
 
 > :shopping_cart: Marketplace Action | Trigger a workflow_dispatch event on a target workflow file.
 
-#### [normalize-majorver](https://github.com/stairwaytowonderland/normalize-majorver)
+### [normalize-majorver](https://github.com/stairwaytowonderland/normalize-majorver)
 
 > :shopping_cart: Marketplace Action | This GitHub Action creates and updates normalized major version tags
 > (e.g. v1, v2) when a semantic versioning tag is pushed.
