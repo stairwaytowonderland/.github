@@ -60,7 +60,7 @@ The [**stairwaytowonderland**](https://github.com/stairwaytowonderland) org publ
 > :shopping_cart: Marketplace Action | This GitHub Action creates and updates normalized major version tags
 > (e.g. v1, v2) when a semantic versioning tag is pushed.
 
-## :cloud: :email: Cloudflare
+## :fire: Cloudflare
 
 ### [cloudflare-email-slack-worker](https://github.com/stairwaytowonderland/cloudflare-email-slack-worker)
 
