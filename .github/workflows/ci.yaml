@@ -181,7 +181,7 @@ jobs:
 
   normalize-majorver:
     name: Normalize Major Version Tag
-    if: (needs.publish.outputs.release-published == 'true' && github.repository == 'stairwaytowonderland/actions') || inputs.normalize-majorver == true
+    if: (needs.publish.outputs.release-published == 'true' && github.repository == 'stairwaytowonderland/.github') || inputs.normalize-majorver == true
     needs: [publish]
     uses: ./.github/workflows/normalize-majorver.yaml
     permissions:
