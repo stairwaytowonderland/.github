@@ -34,6 +34,38 @@ name: CI
 ############################################################
 
 on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'CHANGELOG.md'
+      - 'package.json'
+      - 'package-lock.json'
+
+    tags:
+      - 'v*'
+
+  workflow_dispatch:
+    inputs:
+      normalize-majorver:
+        description: 'Whether to normalize the major version tag after a successful release.'
+        type: boolean
+      fail-on-no-release:
+        description: 'Fail the workflow if no release is published (e.g. if there are no relevant commits).'
+        type: boolean
+      first-release-dispatch-workflow:
+        description: 'The workflow file to dispatch after a successful release.'
+        type: string
+      tag:
+        description: 'Existing release tag to publish (e.g. v1.2.3)'
+        type: string
+      notes-b64:
+        description: 'Base64-encoded release notes (Markdown)'
+        type: string
+      # action-ref:
+      #   description: 'Git ref of the shared actions repo to use (e.g. main or a specific tag/commit)'
+      #   type: string
+      #   default: ''
   workflow_call:
     inputs:
       normalize-majorver:
