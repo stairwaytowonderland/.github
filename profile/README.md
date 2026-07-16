@@ -24,7 +24,7 @@ The [**stairwaytowonderland**](https://github.com/stairwaytowonderland) org publ
 
 > :clipboard: A minimal starting point for a basic repository.
 
-#### [typescript-action-template](https://github.com/stairwaytowonderland/typescript-action-template) *(template)*
+### [typescript-action-template](https://github.com/stairwaytowonderland/typescript-action-template) *(template)*
 
 > :clipboard: Use this template to bootstrap the creation of a TypeScript action.
 
