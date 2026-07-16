@@ -1,0 +1,168 @@
+name: Terraform Deploy
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        required: false
+        type: string
+      custom-directory:
+        required: false
+        type: string
+      terraform-version:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+      aws-region:
+        required: true
+        type: string
+      oidc-role-name:
+        required: true
+        type: string
+      application-name:
+        required: true
+        type: string
+      purpose:
+        required: true
+        type: string
+      plan:
+        required: true
+        type: boolean
+      apply:
+        required: true
+        type: boolean
+      destroy:
+        required: true
+        type: boolean
+      approvers:
+        required: true
+        type: string
+      # action-ref:
+      #   description: 'Git ref of the shared actions repo to use (e.g. main or a specific tag/commit)'
+      #   type: string
+      #   default: ''
+    secrets:
+      aws-account-id:
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+  issues: write
+
+jobs:
+  terraform-plan:
+    name: 'Terraform Plan (${{ inputs.purpose}} - ${{ inputs.environment}})'
+    if: inputs.plan || inputs.apply || inputs.destroy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ inputs.terraform-version }}
+
+      - name: Configure AWS credentials (OIDC)
+        if: ${{ inputs.oidc-role-name != '' }}
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.aws-account-id }}:role/${{ inputs.oidc-role-name }}
+          role-session-name: '${{ inputs.aws-region }}-${{ inputs.environment }}-${{ inputs.application-name }}-plan'
+          aws-region: ${{ inputs.aws-region }}
+
+      # - name: Checkout shared actions repo
+      #   if: inputs.action-ref != ''
+      #   uses: actions/checkout@v7
+      #   with:
+      #     repository: stairwaytowonderland/actions
+      #     path: ./.actions
+      #     ref: ${{ inputs.action-ref }}
+      #     persist-credentials: false
+      #     sparse-checkout: |
+      #       .github
+
+      - name: Terraform Plan ${{ inputs.destroy && ' (Destroy)' || '' }}
+        # uses: ./.actions/.github/actions/terraform-plan
+        uses: stairwaytowonderland/actions/.github/actions/terraform-plan@v1
+        with:
+          working-directory: ${{ inputs.working-directory }}
+          custom-directory: ${{ inputs.custom-directory }}
+          extra-init-args: >
+            -backend-config="region=${{ inputs.aws-region }}"
+            -backend-config="bucket=${{ inputs.environment }}-${{ inputs.aws-region }}-${{ inputs.application-name }}-tfstate-bucket"
+            -backend-config="key=${{ inputs.purpose }}/terraform.tfstate"
+            -backend-config="dynamodb_table=${{ inputs.environment }}-${{ inputs.aws-region }}-${{ inputs.application-name }}-${{ inputs.purpose }}-tfstate-lock"
+          extra-plan-args: >
+            ${{ inputs.destroy && '-destroy' || '' }}
+            -var-file "env/${{ inputs.aws-region }}-${{ inputs.environment }}.tfvars"
+
+  terraform-apply:
+    name: 'Terraform Apply (${{ inputs.purpose}} - ${{ inputs.environment }})'
+    if: inputs.apply
+    runs-on: ubuntu-latest
+    needs: terraform-plan
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Create Issue for Approval
+        uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ github.TOKEN }}
+          approvers: ${{ inputs.approvers }}
+          minimum-approvals: 1
+          issue-title: 'Deploying ${{ github.event.repository.name }} ${{ inputs.purpose}} to ${{ inputs.environment }}'
+          issue-body: 'Please approve or deny the deployment of ${{ github.event.repository.name }} to the ${{ inputs.environment }} environment.'
+          exclude-workflow-initiator-as-approver: false
+          fail-on-denial: true
+          additional-approved-words: ''
+          additional-denied-words: ''
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ inputs.terraform-version }}
+
+      # - name: Set up QEMU
+      #   uses: docker/setup-qemu-action@v3
+
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials (OIDC)
+        if: ${{ inputs.oidc-role-name != '' }}
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.aws-account-id }}:role/${{ inputs.oidc-role-name }}
+          role-session-name: '${{ inputs.aws-region }}-${{ inputs.environment }}-${{ inputs.application-name }}-apply'
+          aws-region: ${{ inputs.aws-region }}
+
+      # - name: Checkout shared actions repo
+      #   if: inputs.action-ref != ''
+      #   uses: actions/checkout@v7
+      #   with:
+      #     repository: stairwaytowonderland/actions
+      #     path: ./.actions
+      #     ref: ${{ inputs.action-ref }}
+      #     persist-credentials: false
+      #     sparse-checkout: |
+      #       .github
+
+      - name: Terraform Apply ${{ inputs.destroy && ' (Destroy)' || '' }}
+        # uses: ./.actions/.github/actions/terraform-apply
+        uses: stairwaytowonderland/actions/.github/actions/terraform-apply@v1
+        with:
+          working-directory: ${{ inputs.working-directory }}
+          custom-directory: ${{ inputs.custom-directory }}
+          extra-init-args: >
+            -backend-config="region=${{ inputs.aws-region }}"
+            -backend-config="bucket=${{ inputs.environment }}-${{ inputs.aws-region }}-${{ inputs.application-name }}-tfstate-bucket"
+            -backend-config="key=${{ inputs.purpose }}/terraform.tfstate"
+            -backend-config="dynamodb_table=${{ inputs.environment }}-${{ inputs.aws-region }}-${{ inputs.application-name }}-${{ inputs.purpose }}-tfstate-lock"
+          extra-apply-args: >
+            ${{ inputs.destroy && '-destroy' || '' }}
+            -var-file "env/${{ inputs.aws-region }}-${{ inputs.environment }}.tfvars"

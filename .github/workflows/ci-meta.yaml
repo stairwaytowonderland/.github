@@ -1,0 +1,95 @@
+name: CI Meta
+
+on:
+  workflow_call:
+    inputs:
+      publish:
+        description: 'Whether to publish a new release'
+        type: boolean
+      # action-ref:
+      #   description: 'Git ref of the shared actions repo to use (e.g. main or a specific tag/commit)'
+      #   type: string
+      #   default: ''
+    outputs:
+      is-release-workflow:
+        description: 'Whether this workflow is a release workflow.'
+        value: ${{ jobs.meta.outputs.is-release-workflow }}
+      is-publish-workflow:
+        description: 'Whether this workflow is a publish workflow.'
+        value: ${{ jobs.meta.outputs.is-publish-workflow }}
+      has-release-tags:
+        description: 'Whether the repository has any release tags.'
+        value: ${{ jobs.meta.outputs.has-release-tags }}
+      repo-owner:
+        description: 'The owner of the repository.'
+        value: ${{ jobs.meta.outputs.repo-owner }}
+      repo-name:
+        description: 'The name of the repository.'
+        value: ${{ jobs.meta.outputs.repo-name }}
+      repo-full-name:
+        description: 'The full name of the repository (owner/name).'
+        value: ${{ jobs.meta.outputs.repo-full-name }}
+      repo-url:
+        description: 'The URL of the repository.'
+        value: ${{ jobs.meta.outputs.repo-url }}
+
+permissions:
+  contents: read
+
+jobs:
+  meta:
+    name: Meta
+    runs-on: ubuntu-latest
+    outputs:
+      is-release-workflow: ${{ steps.set-vars.outputs.is-release-workflow }}
+      is-publish-workflow: ${{ steps.set-vars.outputs.is-publish-workflow }}
+      has-release-tags: ${{ steps.release-tags.outputs.has-release-tags }}
+      repo-owner: ${{ steps.repo-info.outputs.repo-owner }}
+      repo-name: ${{ steps.repo-info.outputs.repo-name }}
+      repo-full-name: ${{ steps.repo-info.outputs.repo-full-name }}
+      repo-url: ${{ steps.repo-info.outputs.repo-url }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # - name: Checkout shared actions repo
+      #   if: inputs.action-ref != ''
+      #   uses: actions/checkout@v7
+      #   with:
+      #     repository: stairwaytowonderland/actions
+      #     path: ./.actions
+      #     ref: ${{ inputs.action-ref }}
+      #     persist-credentials: false
+      #     sparse-checkout: |
+      #       .github/actions
+
+      - name: Check if this is the first commit
+        id: check-if-first-commit
+        # uses: ./.actions/.github/actions/first-commit-action
+        uses: stairwaytowonderland/actions/.github/actions/first-commit-action@v1
+
+      - name: Get repo info
+        id: repo-info
+        # uses: ./.actions/.github/actions/repo-info-action
+        uses: stairwaytowonderland/actions/.github/actions/repo-info-action@v1
+
+      - name: Check workflow type
+        id: set-vars
+        env:
+          IS_RELEASE_WORKFLOW: ${{ startsWith(github.ref, 'refs/heads/main') && ! inputs.publish }}
+          IS_PUBLISH_WORKFLOW: ${{ inputs.publish || (startsWith(github.ref, 'refs/tags/v')) }}
+        run: |
+          {
+            echo "is-release-workflow=$IS_RELEASE_WORKFLOW"
+            echo "is-publish-workflow=$IS_PUBLISH_WORKFLOW"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Detect existing release tags
+        id: release-tags
+        if: ${{ steps.set-vars.outputs.is-release-workflow == 'true' }}
+        # uses: ./.actions/.github/actions/has-tag-action
+        uses: stairwaytowonderland/actions/.github/actions/has-tag-action@v1

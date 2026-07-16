@@ -1,0 +1,97 @@
+name: Publish a Release
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v1.2.3)'
+        type: string
+        required: true
+      notes-b64:
+        description: 'Base64-encoded release notes (Markdown)'
+        type: string
+      # action-ref:
+      #   description: 'Git ref of the shared actions repo to use (e.g. main or a specific tag/commit)'
+      #   type: string
+      #   default: ''
+    secrets:
+      github-token:
+        description: 'GitHub Personal Access Token with repo scope for creating releases.'
+    outputs:
+      release-url:
+        description: 'The URL of the published release.'
+        value: ${{ jobs.publish.outputs.release-url }}
+      release-tag:
+        description: 'The tag of the published release.'
+        value: ${{ jobs.publish.outputs.release-tag }}
+      release-sha:
+        description: 'The commit SHA of the published release.'
+        value: ${{ jobs.publish.outputs.release-sha }}
+      release-notes-b64:
+        description: 'The base64-encoded release notes of the published release.'
+        value: ${{ jobs.publish.outputs.release-notes-b64 }}
+      release-published:
+        description: 'Whether a new release was published.'
+        value: ${{ jobs.publish.outputs.release-published }}
+
+jobs:
+  publish:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    outputs:
+      release-url: ${{ steps.publish.outputs.release-url }}
+      release-tag: ${{ steps.publish.outputs.release-tag }}
+      release-sha: ${{ steps.publish.outputs.release-sha }}
+      release-notes-b64: ${{ steps.publish.outputs.release-notes-b64 }}
+      release-published: ${{ steps.publish.outputs.release-published }}
+
+    steps:
+      # Resolve the tag from whichever trigger fired:
+      #   push: tags                        → github.ref_name  (e.g. v1.2.3)
+      #   workflow_dispatch / workflow_call → inputs.tag
+      - name: Set vars
+        id: vars
+        run: |
+          echo "tag=${{ inputs.tag || github.ref_name }}" >> "$GITHUB_OUTPUT"
+
+      # Checkout at the input tag so setuptools-scm sees it and stamps the
+      # correct version into the wheel metadata.
+      - name: Checkout release tag
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.vars.outputs.tag }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      # - name: Checkout shared actions repo
+      #   if: inputs.action-ref != ''
+      #   uses: actions/checkout@v7
+      #   with:
+      #     repository: stairwaytowonderland/actions
+      #     path: ./.actions
+      #     ref: ${{ inputs.action-ref }}
+      #     persist-credentials: false
+      #     sparse-checkout: |
+      #       .github
+
+      - name: Get auth token
+        id: auth-token
+        # uses: ./.actions/.github/actions/auth-token-action
+        uses: stairwaytowonderland/actions/.github/actions/auth-token-action@v1
+        with:
+          github-token: ${{ secrets.github-token }}
+          app-private-key: ${{ secrets.ORG_REPO_USER_PRIVATE_KEY }}
+          app-client-id: ${{ vars.ORG_REPO_USER_APP_ID }}
+
+      - name: Publish release
+        id: publish
+        uses: stairwaytowonderland/node-semantic-release@v1
+        with:
+          publish: true
+          github-token: ${{ steps.auth-token.outputs.token }}
+          notes-b64: ${{ inputs.notes-b64 }}
+          tag: ${{ steps.vars.outputs.tag }}

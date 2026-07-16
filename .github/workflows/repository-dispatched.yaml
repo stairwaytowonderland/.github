@@ -1,0 +1,62 @@
+name: 📡 Handle Repository Dispatch
+
+on:
+  workflow_call:
+    inputs:
+      repo:
+        description: 'The name of the repository that was dispatched (e.g. owner/repo)'
+        type: string
+        required: true
+      url:
+        description: 'The URL of the repository that was dispatched'
+        type: string
+        required: true
+      sender:
+        description: 'The username of the user or app that dispatched the repository'
+        type: string
+        required: true
+      sender-id:
+        description: 'The ID of the user or app that dispatched the repository'
+        type: string
+        required: true
+      commit-count-to-check:
+        description: 'The commit count to check against (default: 0).'
+        type: number
+
+jobs:
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    outputs:
+      is-first-commit: ${{ steps.check-if-first-commit.outputs.is-first-commit == 'true' }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check if this is the first commit
+        id: check-if-first-commit
+        uses: stairwaytowonderland/actions/.github/actions/first-commit-action@v1
+        with:
+          commit-count-to-check: ${{ inputs.commit-count-to-check }}
+
+  repository-dispatch:
+    runs-on: ubuntu-latest
+    needs: setup
+    if: inputs.commit-count-to-check == 0 || needs.setup.outputs.is-first-commit == 'true'
+    steps:
+      - name: Print Repository Details
+        run: |
+          echo "A repository was dispatched!"
+          echo "Name: $REPO_NAME"
+          if [ -n "$SENDER_LOGIN" ] && [ -n "$SENDER_ID" ]; then
+            echo "Dispatched by: $SENDER_LOGIN (ID: $SENDER_ID)"
+          fi
+          echo "Repository URL: $REPO_URL"
+        env:
+          REPO_NAME: ${{ inputs.repo }}
+          REPO_URL: ${{ inputs.url }}
+          SENDER_LOGIN: ${{ inputs.sender }}
+          SENDER_ID: ${{ inputs.sender-id }}

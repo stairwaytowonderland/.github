@@ -1,0 +1,145 @@
+name: Conventional Commit Check
+
+# Ref: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#filter-pattern-cheat-sheet
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_call:
+    # inputs:
+    #   action-ref:
+    #     description: 'Git ref of the shared actions repo to use (e.g. main or a specific tag/commit)'
+    #     type: string
+    #     default: ''
+    secrets:
+      github-token:
+        description: 'GitHub Personal Access Token with repo scope for checking commits.'
+      ORG_REPO_USER_PRIVATE_KEY:
+        description: 'GitHub App private key used to generate a fallback token for PR comments.'
+        required: false
+      ORG_REPO_USER_APP_ID:
+        description: 'GitHub App client ID used to generate a fallback token for PR comments.'
+        required: false
+
+jobs:
+  validate-commits:
+    name: Check commit messages
+    runs-on: ubuntu-latest
+
+    outputs:
+      conventional-commits-valid: ${{ steps.conventional-commits.outputs.valid == 'true' }}
+      commit-count: ${{ steps.conventional-commits.outputs.commit-count }}
+      is-merge: ${{ steps.check-merge.outputs.is_merge }}
+
+    steps:
+      - name: Debug info
+        run: |
+          echo "GitHub event name: '${GITHUB_EVENT_NAME}'"
+          echo "GitHub ref: '${GITHUB_REF}'"
+          echo "GitHub sha: '${GITHUB_SHA}'"
+          echo "GitHub event before: '${GITHUB_EVENT_BEFORE}'"
+          echo "GitHub event after: '${GITHUB_EVENT_AFTER}'"
+          echo "GitHub event pull request base sha: '${GITHUB_EVENT_PULL_REQUEST_BASE_SHA}'"
+          echo "GitHub event pull request head sha: '${GITHUB_EVENT_PULL_REQUEST_HEAD_SHA}'"
+          echo "GitHub action repository: '${GITHUB_ACTION_REPO}'"
+          echo "GitHub action ref: '${GITHUB_ACTION_REF}'"
+          echo "GitHub action path: '${GITHUB_ACTION_PATH}'"
+        env:
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+          GITHUB_EVENT_AFTER: ${{ github.event.after }}
+          GITHUB_EVENT_PULL_REQUEST_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GITHUB_EVENT_PULL_REQUEST_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          GITHUB_ACTION_REPO: ${{ github.action_repository }}
+          GITHUB_ACTION_REF: ${{ github.action_ref }}
+          GITHUB_ACTION_PATH: ${{ github.action_path }}
+
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # - name: Checkout shared actions repo
+      #   if: inputs.action-ref != ''
+      #   uses: actions/checkout@v7
+      #   with:
+      #     repository: stairwaytowonderland/actions
+      #     path: ./.actions
+      #     ref: ${{ inputs.action-ref }}
+      #     persist-credentials: false
+      #     sparse-checkout: |
+      #       .github
+
+      - name: Check if merge commit
+        id: check-merge
+        # uses: ./.actions/.github/actions/merge-commit-action
+        uses: stairwaytowonderland/actions/.github/actions/merge-commit-action@v1
+
+      - name: Check conventional commits
+        # if: github.event_name == 'pull_request' || steps.check-merge.outputs.is_merge != 'true'
+        id: conventional-commits
+        # uses: ./.actions/.github/actions/conventional-commit-action
+        uses: stairwaytowonderland/actions/.github/actions/conventional-commit-action@v1
+        # with:
+        #   base-ref-from-default-branch: ${{ inputs.base-ref-from-default-branch }}
+        #   base-ref: ${{ inputs.base-ref }}
+        #   fail-on-error: ${{ inputs.fail-on-error }}
+        #   types: ${{ inputs.types }}
+        #   scopes: ${{ inputs.scopes }}
+
+      - name: Get token for PR comment (if validation fails)
+        # if: failure() && github.event_name == 'pull_request'
+        if: failure() && steps.conventional-commits.outputs.valid != 'true'
+        id: get-token
+        # uses: ./.actions/.github/actions/auth-token-action
+        uses: stairwaytowonderland/actions/.github/actions/auth-token-action@v1
+        with:
+          github-token: ${{ secrets.github-token }}
+          app-private-key: ${{ secrets.ORG_REPO_USER_PRIVATE_KEY }}
+          app-client-id: ${{ vars.ORG_REPO_USER_APP_ID }}
+
+      - name: Comment on PR (if validation fails)
+        # if: failure() && github.event_name == 'pull_request'
+        if: failure() && steps.conventional-commits.outputs.valid != 'true'
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ steps.get-token.outputs.token }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## ❌ Conventional Commits Validation Failed
+
+              Your commits do not follow the [Conventional Commits](https://www.conventionalcommits.org/) specification.
+
+              ### Required Format
+              \`\`\`
+              <type>[optional scope][!]: <description>
+
+              [optional body]
+
+              [optional footer(s)]
+              \`\`\`
+
+              ### Examples
+              - \`feat: add new user authentication\`
+              - \`fix(api): correct validation error\`
+              - \`docs: update installation guide\`
+              - \`feat!: redesign navigation (breaking change)\`
+
+              ### Allowed Types
+              - **feat**: New features
+              - **fix**: Bug fixes
+              - **docs**: Documentation changes
+              - **style**: Code style changes (formatting, etc.)
+              - **refactor**: Code refactoring
+              - **perf**: Performance improvements
+              - **test**: Test additions or updates
+              - **build**: Build system changes
+              - **ci**: CI/CD changes
+              - **chore**: Other changes that don't modify src or test files
+              - **revert**: Revert a previous commit
+
+              Please amend your commits to follow this format.`
+            })

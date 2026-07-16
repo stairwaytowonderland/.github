@@ -1,0 +1,130 @@
+name: 🌟 Stargazers
+
+on:
+  workflow_call:
+    inputs:
+      create-issue:
+        description: 'Whether to create a welcome issue for the watcher (if they are a member of the organization).'
+        type: boolean
+      exclude:
+        description: 'Repos to exclude from watcher handling.'
+        type: string
+        # default: |
+        #   ${{ format('{0}/repository-template', github.repository_owner) }}
+        #   ${{ format('{0}/typescript-action-template', github.repository_owner) }}
+      job-summary:
+        description: 'Whether to add a job summary with the welcome message for the watcher.'
+        type: boolean
+        default: true
+      # action-ref:
+      #   description: 'Git ref of the shared actions repo to use (e.g. main or a specific tag/commit)'
+      #   type: string
+      #   default: ''
+
+    outputs:
+      message-heading:
+        description: 'The heading of the welcome message created for the watcher.'
+        value: ${{ jobs.stargazer.outputs.message-heading }}
+      message-body-base64:
+        description: 'The body of the welcome message created for the watcher, encoded in base64.'
+        value: ${{ jobs.stargazer.outputs.message-body-base64 }}
+      is-organization-member:
+        description: 'Whether the watcher is a member of the organization.'
+        value: ${{ jobs.stargazer.outputs.is-organization-member }}
+
+    secrets:
+      github-token:
+        description: 'GitHub Personal Access Token with repo scope for creating issues.'
+
+jobs:
+  stargazer:
+    # if: inputs.exclude == '' || (inputs.exclude != '' && !contains(inputs.exclude, github.repository))
+    if: inputs.exclude == '' || (inputs.exclude != '' && inputs.exclude != github.repository)
+    runs-on: ubuntu-latest
+    outputs:
+      message-heading: ${{ steps.stargazer.outputs.message-heading }}
+      message-body-base64: ${{ steps.stargazer.outputs.message-body-base64 }}
+      is-organization-member: ${{ steps.stargazer.outputs.is-organization-member }}
+    steps:
+      # - name: Checkout shared actions repo
+      #   if: inputs.action-ref != ''
+      #   uses: actions/checkout@v7
+      #   with:
+      #     repository: stairwaytowonderland/actions
+      #     path: ./.actions
+      #     ref: ${{ inputs.action-ref }}
+      #     persist-credentials: false
+      #     sparse-checkout: |
+      #       .github
+
+      - name: Get auth token
+        id: auth-token
+        # uses: ./.actions/.github/actions/auth-token-action
+        uses: stairwaytowonderland/actions/.github/actions/auth-token-action@v1
+        with:
+          github-token: ${{ secrets.github-token }}
+          app-private-key: ${{ secrets.ORG_REPO_USER_PRIVATE_KEY }}
+          app-client-id: ${{ vars.ORG_REPO_USER_APP_ID }}
+          repo-name: actions
+
+      # - uses: ./.actions/.github/actions/stargazers-action
+      - uses: stairwaytowonderland/actions/.github/actions/stargazers-action@v1
+        id: stargazer
+        with:
+          create-issue: ${{ inputs.create-issue == true }}
+          job-summary: ${{ inputs.job-summary == true }}
+          github-token: ${{ steps.auth-token.outputs.token }}
+
+      - name: Get repo info
+        id: repo-info
+        # uses: ./.actions/.github/actions/repo-info-action
+        uses: stairwaytowonderland/actions/.github/actions/repo-info-action@v1
+
+      - name: Trigger remote repository-stargazer event
+        uses: actions/github-script@v9
+        env:
+          REPO_URL: ${{ steps.repo-info.outputs.repo-url }}
+          SENDER_LOGIN: ${{ github.actor }}
+          SENDER_ID: ${{ github.actor_id }}
+        with:
+          github-token: ${{ steps.auth-token.outputs.token }}
+          script: |
+            try {
+              const full_name = context.repo.repo;
+              const owner = context.repo.owner;
+              const repo = 'actions';
+              const url = process.env.REPO_URL;
+              const actor = process.env.SENDER_LOGIN;
+              const actor_id = process.env.SENDER_ID;
+              await github.rest.repos.createDispatchEvent({
+                owner: owner,
+                repo: repo,
+                event_type: 'repository-stargazed',
+                client_payload: {
+                  repository: {
+                    name: full_name,
+                    url: url
+                  },
+                  sender: {
+                    login: actor,
+                    id: actor_id
+                  }
+                }
+              })
+            } catch (error) {
+              core.warning(`Failed to trigger repository-stargazer event: ${error.message}`);
+              // core.setFailed(`Failed to trigger repository-stargazer event: ${error.message}`);
+            }
+
+      - name: Job Summary
+        if: inputs.job-summary != true && steps.stargazer.outputs.is-organization-member == 'true'
+        env:
+          MESSAGE_HEADING: ${{ steps.stargazer.outputs.message-heading }}
+          MESSAGE_BODY_BASE64: ${{ steps.stargazer.outputs.message-body-base64 }}
+        run: |
+          MESSAGE_BODY=$(printf '%s' "$MESSAGE_BODY_BASE64" | base64 -d)
+          tee -a "$GITHUB_STEP_SUMMARY" <<EOF
+          ## ${MESSAGE_HEADING}
+
+          ${MESSAGE_BODY}
+          EOF

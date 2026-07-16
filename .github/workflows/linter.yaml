@@ -1,0 +1,65 @@
+# This workflow will lint the entire codebase using the
+# `super-linter/super-linter` action.
+#
+# For more information, see the super-linter repository:
+#     https://github.com/super-linter/super-linter
+name: Lint Codebase
+
+on:
+  workflow_call:
+    inputs:
+      node-cache-key:
+        description: 'The Node.js cache key to use.'
+        type: string
+        default: 'npm'
+      checkov-file-name:
+        description: 'The Checkov config file to use.'
+        type: string
+        default: '.checkov.yml'
+      node-version-file:
+        description: 'The Node.js version file to use.'
+        type: string
+        default: '.node-version'
+
+permissions:
+  contents: read
+  packages: read
+  statuses: write
+
+jobs:
+  lint:
+    name: Lint Codebase
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Lint Codebase
+        id: super-linter
+        uses: super-linter/super-linter/slim@v8
+        env:
+          # CHECKOV_FILE_NAME: ${{ inputs.checkov-file-name }}
+          DEFAULT_BRANCH: main
+          # FILTER_REGEX_EXCLUDE: dist/**/*
+          FILTER_REGEX_EXCLUDE: '(dist/.*|.*\.csv$)'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LINTER_RULES_PATH: .
+          VALIDATE_CHECKOV: false
+          VALIDATE_ALL_CODEBASE: true
+          VALIDATE_BIOME_FORMAT: false
+          VALIDATE_BIOME_LINT: false
+          VALIDATE_GITHUB_ACTIONS_ZIZMOR: false
+          VALIDATE_JAVASCRIPT_ES: false
+          VALIDATE_JSCPD: false
+          VALIDATE_TYPESCRIPT_ES: false
+          VALIDATE_JSON: false
+          VALIDATE_NATURAL_LANGUAGE: false
+
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          config_file: ${{ inputs.checkov-file-name }}

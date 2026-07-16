@@ -1,0 +1,62 @@
+name: 🆕 Handle New Repository
+
+on:
+  workflow_call:
+    inputs:
+      repo:
+        description: 'The name of the newly created repository (e.g. owner/repo)'
+        type: string
+        required: true
+      url:
+        description: 'The URL of the newly created repository'
+        type: string
+        required: true
+      sender:
+        description: 'The username of the user or app that created the repository'
+        type: string
+        required: true
+      sender-id:
+        description: 'The ID of the user or app that created the repository'
+        type: string
+        required: true
+
+jobs:
+  on-create:
+    name: 📡 Handle Repository Creation
+    uses: ./.github/workflows/repository-dispatched.yaml
+    with:
+      repo: ${{ inputs.repo }}
+      url: ${{ inputs.url }}
+      sender: ${{ inputs.sender }}
+      sender-id: ${{ inputs.sender-id }}
+      # commit-count-to-check: 2
+
+  repository-created:
+    name: Repository Created
+    needs: on-create
+    runs-on: ubuntu-latest
+    env:
+      REPO_NAME: ${{ inputs.repo }}
+      REPO_URL: ${{ inputs.url }}
+      SENDER_LOGIN: ${{ inputs.sender }}
+      SENDER_ID: ${{ inputs.sender-id }}
+    steps:
+      - name: Add summary
+        run: |
+          echo "## Repository Created" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** $REPO_URL" >> $GITHUB_STEP_SUMMARY
+          echo "**Name:** \`$REPO_NAME\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** @$SENDER_LOGIN (ID: $SENDER_ID)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Log Repository Creation Event
+        uses: actions/github-script@v9
+        env:
+          REPO_NAME: ${{ inputs.repo }}
+          REPO_URL: ${{ inputs.url }}
+          SENDER_LOGIN: ${{ inputs.sender }}
+          SENDER_ID: ${{ inputs.sender-id }}
+        with:
+          script: |
+            core.notice(`Repository is being created by ${context.actor} on behalf of ${process.env.SENDER_LOGIN} (ID: ${process.env.SENDER_ID}).`);
+            core.info(`Event sender: ${JSON.stringify(context.payload.sender)}`);
