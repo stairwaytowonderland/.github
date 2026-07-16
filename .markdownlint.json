@@ -1,8 +1,4 @@
 {
-	"MD033": {
-		"allowed_elements": ["ins", "div", "span", "br"]
-	},
-	"MD036": false,
 	"MD013": {
 		"line_length": 120,
 		"code_blocks": false,
@@ -11,5 +7,10 @@
 	"MD024": {
 		"siblings_only": true
 	},
-	"MD028": false
+	"MD028": false,
+	"MD033": {
+		"allowed_elements": ["ins", "div", "code", "span", "br", "details", "summary", "b", "i"]
+	},
+	"MD036": false,
+	"MD041": false
 }
