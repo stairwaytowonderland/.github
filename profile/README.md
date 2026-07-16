@@ -88,17 +88,14 @@ Monorepo for internal use.
 
 ### [**stairwaytowonderland / actions**](https://github.com/stairwaytowonderland/actions)
 
-> :gear: Shared actions and workflows for use by the organization.
+> :gear: Shared actions monorepo for use by the organization.
 
-This **shared repository** contains actions and workflows to assist in:
+This **shared repository** contains actions to assist in:
 
-- [**issue creation**](https://github.com/stairwaytowonderland/actions#4-issue-create-action) *(action)*
-- [**label creation**](https://github.com/stairwaytowonderland/actions#1-labels-create-action) *(action)*
-- [**label synchronization**](https://github.com/stairwaytowonderland/actions#2-labels-sync-action) *(action)*
-- [**terraform deployments**](https://github.com/stairwaytowonderland/actions#6-terraform-deploy) *(workflow)*
-- [**releasing new versions**](https://github.com/stairwaytowonderland/actions#3-release) *(workflow)*
-- [**publishing releases**](https://github.com/stairwaytowonderland/actions#4-publish) *(workflow)*
-- [**normalize major version tags**](https://github.com/stairwaytowonderland/actions/blob/main/.github/workflows/normalize-majorver.yaml)
-*(workflow)*
-- [**running pre-commit**](https://github.com/stairwaytowonderland/actions#2-pre-commit) *(workflow)*
-- [**validating conventional commits**](https://github.com/stairwaytowonderland/actions#1-conventional-commit) *(workflow)*
+- :white_check_mark: [**issue creation**](https://github.com/stairwaytowonderland/actions#4-issue-create-action)
+- :white_check_mark: [**label creation**](https://github.com/stairwaytowonderland/actions#1-labels-create-action)
+- :white_check_mark: [**label synchronization**](https://github.com/stairwaytowonderland/actions#2-labels-sync-action)
+- :white_check_mark: [**terraform deployments**](https://github.com/stairwaytowonderland/actions#6-terraform-deploy)
+- :white_check_mark: [**validating conventional commits**](https://github.com/stairwaytowonderland/actions#1-conventional-commit)
+
+**... and more!**
