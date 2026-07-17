@@ -12,13 +12,11 @@ updates:
   - package-ecosystem: 'github-actions'
     directories:
       - '.github/workflows'
-      - '.github/actions/**'
+      # - '.github/actions/**'
     exclude-paths:
-      - '.github/workflows/ci*.yaml'
       - '.github/workflows/create-labels.yaml'
       - '.github/workflows/dependabot-tests.yaml'
       - '.github/workflows/import-csv-issues.yaml'
-      - '.github/workflows/sync-labels.yaml'
     schedule:
       # interval: "monthly"
       # day: "friday"
@@ -41,7 +39,9 @@ updates:
     directory: '/'
     # Prevent Dependabot from checking workflows inside these paths
     exclude-paths:
-      - '.github/actions/**'
+      # - '.github/actions/**'
+      - '.github/workflows/ci.yaml'
+      - '.github/workflows/docker-aws-ecr.yaml'
       - '.github/workflows/linter.yaml'
       - '.github/workflows/licensed.yaml'
       - '.github/workflows/release*.yaml'
