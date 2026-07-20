@@ -82,9 +82,7 @@ The [**stairwaytowonderland**](https://github.com/stairwaytowonderland) org publ
 >
 > Designed for use as a lightweight, customizable Python runtime in container-based apps and workflows.
 
-## :ocean: Shared Actions & Workflows Monorepo
-
-Monorepo for internal use.
+## :ocean: Shared Actions & Workflows Monorepos
 
 ### [**stairwaytowonderland / actions**](https://github.com/stairwaytowonderland/actions)
 
@@ -99,3 +97,7 @@ This **shared repository** contains actions to assist in:
 - :white_check_mark: [**validating conventional commits**](https://github.com/stairwaytowonderland/actions#1-conventional-commit)
 
 **... and more!**
+
+### [**stairwaytowonderland / .github**](https://github.com/stairwaytowonderland/.github/workflows)
+
+> :ferris_wheel: Reuseable workflows monorepo for use by the organization.
