@@ -36,7 +36,7 @@ The [**stairwaytowonderland**](https://github.com/stairwaytowonderland) org publ
 
 ### [python-reusable-workflows](https://github.com/stairwaytowonderland/python-reusable-workflows)
 
-> :arrows_counterclockwise: Reuseable workflows to release a Python app using semantic versioning, create a wheel
+> :arrows_counterclockwise: Reusable workflows to release a Python app using semantic versioning, create a wheel
 > package artifact, and publish a release.
 
 ## :octopus: Marketplace Actions
@@ -100,4 +100,4 @@ This **shared repository** contains actions to assist in:
 
 ### [**stairwaytowonderland / .github**](https://github.com/stairwaytowonderland/.github/workflows)
 
-> :ferris_wheel: Reuseable workflows monorepo for use by the organization.
+> :ferris_wheel: Reusable workflows monorepo for use by the organization.
