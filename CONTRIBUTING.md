@@ -211,7 +211,7 @@ label
 By contributing, you agree to the following:
 
 - Your contributions will be licensed under the same terms as the project `LICENSE`.
-- If the project `LICENSE` is unspecified, your contributions will be licensed under the organization's [MIT License](./LICENSE).
+- If the project `LICENSE` is unspecified, your contributions will be licensed under the organization's [GPL-3.0](./LICENSE).
 
 See [Licensing a repository](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository)
 for more information.
