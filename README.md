@@ -3,7 +3,7 @@
 [![Continuous integration](https://github.com/stairwaytowonderland/.github/actions/workflows/ci.yaml/badge.svg)](https://github.com/stairwaytowonderland/.github/actions/workflows/ci.yaml)
 [![GitHub latest release](https://img.shields.io/github/v/release/stairwaytowonderland/.github?include_prereleases&logo=rocket)](https://github.com/stairwaytowonderland/.github/releases)
 [![GitHub last commit](https://img.shields.io/github/last-commit/stairwaytowonderland/.github/main?logo=git)](https://github.com/stairwaytowonderland/.github/commits/main)
-[![GitHub license](https://img.shields.io/github/license/stairwaytowonderland/.github?logo=opensourceinitiative&labelCol&color=yellow&logoColor=white)](https://github.com/stairwaytowonderland/.github/tree/main/LICENSE)
+[![GitHub license](https://img.shields.io/github/license/stairwaytowonderland/.github?logo=opensourceinitiative)](https://github.com/stairwaytowonderland/.github/tree/main/LICENSE)
 [![semantic-release: conventionalcommits](https://img.shields.io/badge/semantic--release-cc-FE5196?logo=semantic-release)](https://github.com/semantic-release/semantic-release)
 [![pre-commit](https://img.shields.io/badge/pre--commit-FAB040?logo=pre-commit&logoColor=black)](https://github.com/pre-commit/pre-commit)
 
