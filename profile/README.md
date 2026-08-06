@@ -98,6 +98,6 @@ This **shared repository** contains actions to assist in:
 
 **... and more!**
 
-### [**stairwaytowonderland / .github**](https://github.com/stairwaytowonderland/.github/workflows)
+### [**stairwaytowonderland / .github**](https://github.com/stairwaytowonderland/.github/tree/main/.github/workflows)
 
 > :ferris_wheel: Reusable workflows monorepo for use by the organization.
