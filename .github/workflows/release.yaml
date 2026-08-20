@@ -6,6 +6,7 @@ on:
       dispatch-workflow:
         description: 'The workflow file to dispatch after a successful release.'
         type: string
+        required: true
       dispatch-workflow-normalize-majorver:
         description: 'Whether to normalize the major version tag after a successful release.'
         type: boolean
