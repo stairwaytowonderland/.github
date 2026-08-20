@@ -59,7 +59,7 @@ jobs:
           VALIDATE_JSON: false
           VALIDATE_NATURAL_LANGUAGE: false
           # Bypasses the strict editorconfig line scanner:
-          VALIDATE_EDITORCONFIG: false
+          # VALIDATE_EDITORCONFIG: false
 
       - name: Run Checkov
         uses: bridgecrewio/checkov-action@v12
