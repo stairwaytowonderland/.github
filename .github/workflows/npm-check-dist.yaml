@@ -24,7 +24,7 @@ on:
       files-to-ignore:
         description: 'A pipe-separated array of files to ignore when comparing the expected and actual dist/ directories.'
         type: string
-        default: 'index.js.map|sourcemap-register.js|licensed.txt'
+        default: 'index.js.map|sourcemap-register.js|licenses.txt'
       node-cache-key:
         description: 'The Node.js cache key to use.'
         type: string
