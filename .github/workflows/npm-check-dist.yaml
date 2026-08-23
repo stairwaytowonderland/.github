@@ -21,6 +21,10 @@ on:
         description: 'The dist/ directory to check.'
         type: string
         default: 'dist'
+      files-to-ignore:
+        description: 'A pipe-separated array of files to ignore when comparing the expected and actual dist/ directories.'
+        type: string
+        default: 'index.js.map|sourcemap-register.js'
       node-cache-key:
         description: 'The Node.js cache key to use.'
         type: string
@@ -70,16 +74,20 @@ jobs:
         id: diff
         env:
           DIST_DIR: ${{ inputs.dist-dir }}
+          FILES_TO_IGNORE: ${{ inputs.files-to-ignore }}
         run: |
-          if [ ! -d "${DIST_DIR}" ]; then
-            echo "Expected ${DIST_DIR} directory does not exist.  See status below:"
-            ls -la ./
+          # Get a list of files that are different between the checked-in dist/ directory and the generated dist/ directory,
+          # then trim the list to remove any leading or trailing whitespace.
+          CHANGED_FILES=$(git diff --ignore-space-at-eol --name-only "${DIST_DIR}" | grep -vE "$FILES_TO_IGNORE" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
+          if [ -n "$CHANGED_FILES" ]; then
+            echo "❗️ Detected uncommitted changes after build (see diff output below)." >&2
+            echo "This indicates that the dist/ directory ("${DIST_DIR}") is out of sync with the checked-in index.js." >&2
+            echo "⭐️ If the changes below are expected, run 'npm run build:compile && npm run build:package' and commit the output files." >&2
+            # Run `git diff` for each line/file in $CHANGED_FILES:
+            echo "$CHANGED_FILES" | xargs -I {} git diff --ignore-space-at-eol --text -- {}
             exit 1
-          fi
-          if [ "$(git diff --ignore-space-at-eol --text "${DIST_DIR}" | wc -l)" -gt "0" ]; then
-            echo "Detected uncommitted changes after build. See status below:"
-            git diff --ignore-space-at-eol --text "${DIST_DIR}"
-            exit 1
+          else
+            echo "✅ No uncommitted changes detected after build."
           fi
 
       # If `dist/` was different than expected, upload the expected version as a
