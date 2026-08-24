@@ -16,6 +16,10 @@ on:
         description: 'Whether to add a job summary with the welcome message for the watcher.'
         type: boolean
         default: true
+      central-repo-name:
+        description: 'The name of the central target repository to handle stargazers for (e.g. ".github").'
+        type: string
+        default: .github-private
       # action-ref:
       #   description: 'Git ref of the shared actions repo to use (e.g. main or a specific tag/commit)'
       #   type: string
@@ -65,7 +69,7 @@ jobs:
           github-token: ${{ secrets.github-token }}
           app-private-key: ${{ secrets.ORG_REPO_USER_PRIVATE_KEY }}
           app-client-id: ${{ vars.ORG_REPO_USER_APP_ID }}
-          repo-name: .github
+          repo-name: ${{ inputs.central-repo-name }}
 
       # - uses: ./.actions/.github/actions/stargazers-action
       - uses: stairwaytowonderland/actions/.github/actions/stargazers-action@v1
@@ -84,7 +88,7 @@ jobs:
         uses: actions/github-script@v9
         env:
           EVENT_TYPE: repository-stargazed
-          TARGET_REPO: stairwaytowonderland/.github
+          TARGET_REPO: stairwaytowonderland/${{ inputs.central-repo-name }}
           REPO_URL: ${{ steps.repo-info.outputs.repo-url }}
           SENDER_LOGIN: ${{ github.actor }}
           SENDER_ID: ${{ github.actor_id }}
