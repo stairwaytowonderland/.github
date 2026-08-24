@@ -65,7 +65,7 @@ jobs:
           github-token: ${{ secrets.github-token }}
           app-private-key: ${{ secrets.ORG_REPO_USER_PRIVATE_KEY }}
           app-client-id: ${{ vars.ORG_REPO_USER_APP_ID }}
-          repo-name: actions
+          repo-name: .github
 
       # - uses: ./.actions/.github/actions/stargazers-action
       - uses: stairwaytowonderland/actions/.github/actions/stargazers-action@v1
