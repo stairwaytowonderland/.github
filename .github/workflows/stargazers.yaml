@@ -84,7 +84,7 @@ jobs:
         uses: actions/github-script@v9
         env:
           EVENT_TYPE: repository-stargazed
-          TARGET_REPO: stairwaytowonderland/.github-private
+          TARGET_REPO: stairwaytowonderland/.github
           REPO_URL: ${{ steps.repo-info.outputs.repo-url }}
           SENDER_LOGIN: ${{ github.actor }}
           SENDER_ID: ${{ github.actor_id }}
@@ -94,23 +94,28 @@ jobs:
             try {
               const targetRepoParts = process.env.TARGET_REPO.split('/');
               const isRepoNameOnly = targetRepoParts.length === 1;
-              let owner;
-              let repo;
+              let targetOwner;
+              let targetRepo;
               if (isRepoNameOnly) {
                 core.warning(`TARGET_REPO is only a repository name, not a full owner/repo path. This may cause issues when triggering the repository-stargazer event.`);
-                owner = context.repo.owner;
-                repo = targetRepoParts[0];
+                targetOwner = context.repo.owner;
+                targetRepo = targetRepoParts[0];
               } else {
-                owner = targetRepoParts[0];
-                repo = targetRepoParts[1];
+                targetOwner = targetRepoParts[0];
+                targetRepo = targetRepoParts[1];
               }
               const sourceRepo = context.repo.repo;
               const url = process.env.REPO_URL;
               const actor = process.env.SENDER_LOGIN;
               const actorId = process.env.SENDER_ID;
+              core.info(`Triggering ${process.env.EVENT_TYPE} event for target repo: ${targetOwner}/${targetRepo}`);
+              core.debug(`Source repo: ${sourceRepo}`);
+              core.debug(`Repository URL: ${url}`);
+              core.debug(`Sender login: ${actor}`);
+              core.debug(`Sender ID: ${actorId}`);
               await github.rest.repos.createDispatchEvent({
-                owner: owner,
-                repo: repo,
+                owner: targetOwner,
+                repo: targetRepo,
                 event_type: process.env.EVENT_TYPE,
                 client_payload: {
                   repository: {
