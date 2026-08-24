@@ -83,6 +83,7 @@ jobs:
       - name: Trigger remote repository-stargazer event
         uses: actions/github-script@v9
         env:
+          EVENT_TYPE: repository-stargazed
           TARGET_REPO: stairwaytowonderland/actions
           REPO_URL: ${{ steps.repo-info.outputs.repo-url }}
           SENDER_LOGIN: ${{ github.actor }}
@@ -110,7 +111,7 @@ jobs:
               await github.rest.repos.createDispatchEvent({
                 owner: owner,
                 repo: repo,
-                event_type: 'repository-stargazed',
+                event_type: process.env.EVENT_TYPE,
                 client_payload: {
                   repository: {
                     name: sourceRepo,
