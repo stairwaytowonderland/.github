@@ -83,6 +83,7 @@ jobs:
       - name: Trigger remote repository-stargazer event
         uses: actions/github-script@v9
         env:
+          TARGET_REPO: stairwaytowonderland/actions
           REPO_URL: ${{ steps.repo-info.outputs.repo-url }}
           SENDER_LOGIN: ${{ github.actor }}
           SENDER_ID: ${{ github.actor_id }}
@@ -90,24 +91,34 @@ jobs:
           github-token: ${{ steps.auth-token.outputs.token }}
           script: |
             try {
-              const full_name = context.repo.repo;
-              const owner = context.repo.owner;
-              const repo = 'actions';
+              const targetRepoParts = process.env.TARGET_REPO.split('/');
+              const isRepoNameOnly = targetRepoParts.length === 1;
+              let owner;
+              let repo;
+              if (isRepoNameOnly) {
+                core.warning(`TARGET_REPO is only a repository name, not a full owner/repo path. This may cause issues when triggering the repository-stargazer event.`);
+                owner = context.repo.owner;
+                repo = targetRepoParts[0];
+              } else {
+                owner = targetRepoParts[0];
+                repo = targetRepoParts[1];
+              }
+              const sourceRepo = context.repo.repo;
               const url = process.env.REPO_URL;
               const actor = process.env.SENDER_LOGIN;
-              const actor_id = process.env.SENDER_ID;
+              const actorId = process.env.SENDER_ID;
               await github.rest.repos.createDispatchEvent({
                 owner: owner,
                 repo: repo,
                 event_type: 'repository-stargazed',
                 client_payload: {
                   repository: {
-                    name: full_name,
+                    name: sourceRepo,
                     url: url
                   },
                   sender: {
                     login: actor,
-                    id: actor_id
+                    id: actorId
                   }
                 }
               })
