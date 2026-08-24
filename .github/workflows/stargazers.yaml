@@ -84,7 +84,7 @@ jobs:
         uses: actions/github-script@v9
         env:
           EVENT_TYPE: repository-stargazed
-          TARGET_REPO: stairwaytowonderland/actions
+          TARGET_REPO: stairwaytowonderland/.github-private
           REPO_URL: ${{ steps.repo-info.outputs.repo-url }}
           SENDER_LOGIN: ${{ github.actor }}
           SENDER_ID: ${{ github.actor_id }}
