@@ -1,0 +1,37 @@
+name: Add dependency PRs to board
+
+on:
+  workflow_call:
+    inputs:
+      dry-run:
+        description: 'Dry run mode'
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      github-token:
+        description: 'GitHub token with repo access'
+
+permissions:
+  contents: read
+
+jobs:
+  add-to-project:
+    name: Add pull requests to project
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get auth token
+        id: auth-token
+        uses: stairwaytowonderland/actions/.github/actions/auth-token-action@v1
+        with:
+          github-token: ${{ secrets.github-token }}
+          app-private-key: ${{ secrets.ORG_REPO_USER_PRIVATE_KEY }}
+          app-client-id: ${{ vars.ORG_REPO_USER_APP_ID }}
+
+      - uses: stairwaytowonderland/add-to-project@v1
+        with:
+          dry-run: ${{ github.event.inputs.dry-run }}
+          all-by-project-owner: true
+          project-url: https://github.com/orgs/${{ github.repository_owner }}/projects/5
+          github-token: ${{ steps.auth-token.outputs.token }}
+          labeled: dependencies
