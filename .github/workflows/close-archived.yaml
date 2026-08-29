@@ -11,6 +11,7 @@ on:
     secrets:
       github-token:
         description: 'GitHub token with repo access'
+        required: true
 
 permissions:
   contents: read
@@ -19,20 +20,12 @@ jobs:
   close-issues:
     runs-on: ubuntu-latest
     steps:
-      - name: Get auth token
-        id: auth-token
-        uses: stairwaytowonderland/actions/.github/actions/auth-token-action@v1
-        with:
-          github-token: ${{ secrets.github-token }}
-          app-private-key: ${{ secrets.ORG_PROJECT_MGMT_PRIVATE_KEY }}
-          app-client-id: ${{ vars.ORG_PROJECT_MGMT_APP_ID }}
-
       - name: Close issues for archived repos
         uses: actions/github-script@v9
         env:
           DRY_RUN: ${{ inputs.dry-run }}
         with:
-          github-token: ${{ steps.auth-token.outputs.token }} # Needs repo/administrative scope
+          github-token: ${{ secrets.github-token }} # Needs repo/administrative scope
           script: |
             // 1. Determine Dry Run status (default to false if triggered by automated cron schedule)
             const isDryRun = process.env.DRY_RUN === 'true' || process.env.DRY_RUN === true;
