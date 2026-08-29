@@ -17,104 +17,125 @@ permissions:
   contents: read
 
 jobs:
+  fetch-repos:
+    runs-on: ubuntu-latest
+    outputs:
+      repos: ${{ steps.fetch-repos.outputs.repos }}
+      count: ${{ steps.fetch-repos.outputs.count }}
+      archived-repos: ${{ steps.fetch-repos.outputs.archived-repos }}
+      archived-count: ${{ steps.fetch-repos.outputs.archived-count }}
+    steps:
+      - name: Fetch Organization Repositories
+        id: fetch-repos
+        uses: actions/github-script@v7
+        with:
+          # Use a PAT if you need to fetch private repositories across the whole organization
+          github-token: ${{ secrets.ORGANIZATION_PAT }}
+          script: |
+            // Safely grab the current organization name from the runner context
+            const orgName = context.repo.owner;
+
+            const repos = await github.paginate(github.rest.repos.listForOrg, {
+              org: orgName,
+              per_page: 100,
+              type: 'all'
+            }, (response) => {
+              // Optimization: Only keep properties the next step needs to avoid size limits
+              return response.data.map(repo => ({
+                name: repo.name,
+                owner: repo.owner.login,
+                org: orgName,
+                archived: repo.archived,
+                full_name: repo.full_name,
+                html_url: repo.html_url
+              }));
+            });
+
+            console.log(`Successfully fetched ${repos.length} repositories.`);
+
+            // Serialize the array to a JSON string and set the output
+            core.setOutput('repos', JSON.stringify(repos));
+            core.setOutput('count', repos.length);
+            core.setOutput('archived-repos', JSON.stringify(repos.filter(repo => repo.archived)));
+            core.setOutput('archived-count', repos.filter(repo => repo.archived).length);
+
   close-issues:
     runs-on: ubuntu-latest
+    needs: fetch-repos
+    strategy:
+      matrix:
+        include: ${{ fromJSON(needs.fetch-repos.outputs.archived-repos) }}
+    env:
+      DRY_RUN: ${{ inputs.dry-run }}
     steps:
-      - name: Close issues for archived repos
+      - name: Close issues for archived repos matrix
         uses: actions/github-script@v9
-        env:
-          DRY_RUN: ${{ inputs.dry-run }}
         with:
           github-token: ${{ secrets.github-token }} # Needs repo/administrative scope
           script: |
-            // 1. Determine Dry Run status (default to false if triggered by automated cron schedule)
             const isDryRun = process.env.DRY_RUN === 'true' || process.env.DRY_RUN === true;
+            const owner = matrix.owner;
+            const repo = matrix.name;
+            console.log(`Processing repo: ${repo}`);
 
-            const owner = context.repo.owner;
             const summaryClosed = [];
             const summaryErrors = [];
 
             try {
-              // 2. Fetch all repositories
-              const repos = await github.paginate(github.rest.repos.listForOrg, {
-                org: owner,
-                type: 'all',
-                per_page: 100
+
+              // Fetch open issues for the repository
+              const issues = await github.paginate(github.rest.issues.listForRepo, {
+                owner,
+                repo,
+                state: 'open'
               });
 
-              for (const repo of repos) {
-                if (repo.archived) {
-                  console.log(`Checking archived repo: ${repo.name}`);
-
-                  try {
-                    // 3. Skip mutating repo states if Dry Run is true
-                    // Unarchive the repository to allow issue closure
-                    if (!isDryRun) {
-                      await github.rest.repos.update({
-                        owner,
-                        repo: repo.name,
-                        archived: false
-                      });
-                    }
-
-                    // 4. Fetch open issues
-                    const issues = await github.paginate(github.rest.issues.listForRepo, {
+              for (const issue of issues) {
+                if (!issue.pull_request) {
+                  if (!isDryRun) {
+                    await github.rest.issues.update({
                       owner,
-                      repo: repo.name,
-                      state: 'open'
+                      repo,
+                      issue_number: issue.number,
+                      state: 'closed',
+                      state_reason: 'not_planned'
                     });
-
-                    for (const issue of issues) {
-                      if (!issue.pull_request) {
-                        // 5. Skip closing issues if Dry Run is true
-                        if (!isDryRun) {
-                          await github.rest.issues.update({
-                            owner,
-                            repo: repo.name,
-                            issue_number: issue.number,
-                            state: 'closed',
-                            state_reason: 'not_planned'
-                          });
-                          console.log(`Closed issue #${issue.number} in ${repo.name}`);
-                          summaryClosed.push(`- **${repo.name}**: Closed Issue [#${issue.number}](${issue.html_url})`);
-                        } else {
-                          console.log(`[DRY RUN] Would close issue #${issue.number} in ${repo.name}`);
-                          summaryClosed.push(`- **${repo.name}**: *[DRY RUN]* Would close Issue [#${issue.number}](${issue.html_url})`);
-                        }
-                      }
-                    }
-
-                    // 6. Only re-archive if we previously unarchived it
-                    if (!isDryRun) {
-                      await github.rest.repos.update({
-                        owner,
-                        repo: repo.name,
-                        archived: true
-                      });
-                    }
-                  } catch (repoError) {
-                    console.error(`Error processing repo ${repo.name}:`, repoError.message);
-                    summaryErrors.push(`- **${repo.name}**: ${repoError.message}`);
-
-                    // Fail-safe recovery check
-                    // Attempt to re-archive the repository as a fail-safe recovery step
-                    if (!isDryRun) {
-                      try {
-                        await github.rest.repos.update({ owner, repo: repo.name, archived: true });
-                      } catch (_) {}
-                    }
+                    console.log(`Closed issue #${issue.number} in ${repo}`);
+                    summaryClosed.push(`- **${repo}**: Closed Issue [#${issue.number}](${issue.html_url})`);
+                  } else {
+                    console.log(`[DRY RUN] Would close issue #${issue.number} in ${repo}`);
+                    summaryClosed.push(`- **${repo}**: *[DRY RUN]* Would close Issue [#${issue.number}](${issue.html_url})`);
                   }
                 }
               }
-            } catch (globalError) {
-              summaryErrors.push(`- **Global Error**: ${globalError.message}`);
+
+              if (!isDryRun) {
+                await github.rest.repos.update({
+                  owner,
+                  repo,
+                  archived: true
+                });
+                summaryClosed.push(`- Archived repo **${repo}**`);
+              } else {
+                summaryClosed.push(`- *[DRY RUN]* Would archive repo **${repo}**`);
+              }
+            } catch (repoError) {
+              console.error(`Error processing repo ${repo}:`, repoError);
+              summaryErrors.push(`- **${repo}**: ${repoError.message}`);
+
+              // Fail-safe recovery check
+              // Attempt to re-archive the repository as a fail-safe recovery step
+              if (!isDryRun) {
+                try {
+                  await github.rest.repos.update({ owner, repo, archived: true });
+                } catch (_) {}
+              }
             }
 
-            // 7. Render dynamic GitHub Step Summary
             const statusBadge = isDryRun ? '⚠️ DRY RUN ACTIVE (No changes made)' : '✅ LIVE RUN COMPLETED';
 
             await core.summary
-              .addHeading('Archived Repository Issue Cleanup Summary')
+              .addHeading(`Archived Repository Issue Cleanup Summary for ${repo}`)
               .addText(`**Execution Mode:** ${statusBadge}`)
               .addText(`Target Owner context evaluated as: **${owner}**`)
               .addHeading(isDryRun ? 'Issues Identified for Closing' : 'Closed Issues', 3)
