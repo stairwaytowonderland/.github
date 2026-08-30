@@ -77,14 +77,12 @@ jobs:
             const repoData = [];
             // An object to hold repositories and their open items
             const targets = {};
-
             // An array to hold repositories that were updated (unarchived and re-archived)
             const updatedRepos = [];
-
             // An array to hold repositories that failed to be processed
             const failedRepos = [];
 
-            const logMessage = (message: string = '', isWarning: boolean = false) => {
+            const logMessage = (message = '', isWarning = false) => {
               if (message.trim() === '') return;
               if (isWarning) {
                 core.warning(message);
@@ -93,7 +91,7 @@ jobs:
               }
             };
 
-            const logOutput = (message: string = '') => {
+            const logOutput = (message = '') => {
               logMessage(message, failedRepos.length > 0);
               core.setOutput('updated-repos', JSON.stringify(updatedRepos));
               core.setOutput('updated-count', updatedRepos.length);
@@ -101,7 +99,7 @@ jobs:
               core.setOutput('failed-count', failedRepos.length);
             };
 
-            const logOutputAndFail = (message: string) => {
+            const logOutputAndFail = (message = '') => {
               logOutput();
               core.setFailed(message);
             };
@@ -197,6 +195,8 @@ jobs:
                     core.info(`  ✅ Closed Issue #${item.number}`);
                   }
                 }
+
+                updatedRepos.push(repoName);
               } catch (error) {
                 failedRepos.push({ name: repoName, stage: 'processing', error: error.message });
                 if (!failOnError) {
@@ -210,7 +210,6 @@ jobs:
                 try {
                   await github.rest.repos.update({ owner: orgName, repo: repoName, archived: true });
                   core.info(`  🗂️ Safely re-archived ${repoName}`);
-                  updatedRepos.push(repoName);
                 } catch (error) {
                   failedRepos.push({ name: repoName, stage: 're-archiving', error: error.message });
                   if (!failOnError) {
