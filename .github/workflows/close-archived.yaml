@@ -3,10 +3,14 @@ name: Reusable Search-Driven Archived Repo Cleanup
 on:
   workflow_call:
     inputs:
-      dry_run:
+      dry-run:
         description: 'Dry Run (Log actions without closing items or modifying archives)'
         type: boolean
         default: true
+      results-only:
+        description: 'Whether to only return results without closing items or modifying archives'
+        type: boolean
+        default: false
     secrets:
       github-token:
         description: 'PAT or GitHub App Installation Token with repo permissions'
@@ -15,26 +19,43 @@ on:
       repos:
         description: 'JSON array of repositories containing open items'
         value: ${{ jobs.search-and-close.outputs.repos }}
+      count:
+        description: 'Number of repositories containing open items'
+        value: ${{ jobs.search-and-close.outputs.count }}
+      targets:
+        description: 'JSON object of repositories and their open items'
+        value: ${{ jobs.search-and-close.outputs.targets }}
+      results:
+        description: 'JSON array of all open issues and PRs found in archived repositories'
+        value: ${{ jobs.search-and-close.outputs.results }}
 
 jobs:
   search-and-close:
     runs-on: ubuntu-latest
     outputs:
       repos: ${{ steps.process-items.outputs.repos }}
+      count: ${{ steps.process-items.outputs.count }}
+      results: ${{ steps.process-items.outputs.results }}
+      targets: ${{ steps.process-items.outputs.targets }}
     steps:
       - name: Find and Close Items in Archived Repos
         id: process-items
         uses: actions/github-script@v9
         env:
-          DRY_RUN: ${{ inputs.dry_run }}
+          DRY_RUN: ${{ inputs.dry-run }}
+          RESULTS_ONLY: ${{ inputs.results-only }}
         with:
           github-token: ${{ secrets.github-token }}
           script: |
             const orgName = context.repo.owner;
-            const isDryRun = process.env.DRY_RUN === 'true';
+            const resultsOnly = process.env.RESULTS_ONLY === 'true';
+            const isDryRun = resultsOnly || process.env.DRY_RUN === 'true';
 
-            if (isDryRun) {
-              core.info("⚠️ DRY RUN ENABLED: No changes will be saved to GitHub.");
+            // An array to hold flat objects for the matrix output
+            const repoData = [];
+
+            if (isDryRun && !resultsOnly) {
+              core.info("👀 DRY RUN ENABLED: No changes will be saved to GitHub.");
             }
 
             // 1. Query for open issues/PRs in archived repositories
@@ -46,12 +67,13 @@ jobs:
               { q, per_page: 100 }
             );
 
-            // An array to hold flat objects for the matrix output
-            const repoData = [];
+            core.info(`Found ${searchResults.length} open items across archived repositories.`);
+            core.setOutput('results', JSON.stringify(searchResults));
 
             if (searchResults.length === 0) {
               core.info("No open issues or PRs found in archived repositories.");
-              core.setOutput('repos', JSON.stringify([]));
+              core.setOutput('repos', JSON.stringify(repoData));
+              core.setOutput('count', 0);
               return;
             }
 
@@ -77,6 +99,18 @@ jobs:
               });
             }
 
+            core.info(`Targets: ${JSON.stringify(targets)}`);
+            core.info(`repoData: ${JSON.stringify(repoData)}`);
+
+            core.setOutput('targets', JSON.stringify(targets));
+            core.setOutput('repos', JSON.stringify(repoData));
+            core.setOutput('count', repoData.length);
+
+            if (resultsOnly) {
+              core.info("🔍 Results-only mode enabled. Exiting without closing items or modifying archives.");
+              return;
+            }
+
             // 3. Process each repository sequentially (only if not a dry run)
             for (const [repoName, items] of Object.entries(targets)) {
               core.info(`\n📦 Repository: ${repoName} (${items.length} open items)`);
@@ -92,29 +126,30 @@ jobs:
               try {
                 // Temporarily unarchive to allow mutation
                 await github.rest.repos.update({ owner: orgName, repo: repoName, archived: false });
-                core.info(`  Temporarily unarchived ${repoName}`);
+                core.info(`  📂 Temporarily unarchived ${repoName}`);
 
                 for (const item of items) {
                   if (item.isPR) {
                     await github.rest.pulls.update({
                       owner: orgName, repo: repoName, pull_number: item.number, state: 'closed'
                     });
-                    core.info(`  Closed PR #${item.number}`);
+                    core.info(`  ✅ Closed PR #${item.number}`);
                   } else {
                     await github.rest.issues.update({
                       owner: orgName, repo: repoName, issue_number: item.number, state: 'closed', state_reason: 'not_planned'
                     });
-                    core.info(`  Closed Issue #${item.number}`);
+                    core.info(`  ✅ Closed Issue #${item.number}`);
                   }
                 }
               } catch (error) {
                 core.error(`  ❌ Error processing ${repoName}: ${error.message}`);
               } finally {
                 // Relock the repository data safe by re-archiving
-                await github.rest.repos.update({ owner: orgName, repo: repoName, archived: true });
-                core.info(`  Safely re-archived ${repoName}`);
+                try {
+                  await github.rest.repos.update({ owner: orgName, repo: repoName, archived: true });
+                  core.info(`  🗂️ Safely re-archived ${repoName}`);
+                } catch (error) {
+                  core.error(`  ❌ Error re-archiving ${repoName}: ${error.message}`);
+                }
               }
             }
-
-            // Output the complete flat list of items
-            core.setOutput('repos', JSON.stringify(repoData));
