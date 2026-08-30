@@ -11,6 +11,10 @@ on:
         description: 'Whether to only return results without closing items or modifying archives'
         type: boolean
         default: false
+      fail-on-error:
+        description: 'Whether to fail the workflow if any errors occur during processing'
+        type: boolean
+        default: true
     secrets:
       github-token:
         description: 'PAT or GitHub App Installation Token with repo permissions'
@@ -28,6 +32,18 @@ on:
       results:
         description: 'JSON array of all open issues and PRs found in archived repositories'
         value: ${{ jobs.search-and-close.outputs.results }}
+      updated-repos:
+        description: 'JSON array of repositories that were updated (unarchived and re-archived)'
+        value: ${{ jobs.search-and-close.outputs.updated-repos }}
+      updated-count:
+        description: 'Number of repositories that were updated (unarchived and re-archived)'
+        value: ${{ jobs.search-and-close.outputs.updated-count }}
+      failed-repos:
+        description: 'JSON array of repositories that failed to be processed'
+        value: ${{ jobs.search-and-close.outputs.failed-repos }}
+      failed-count:
+        description: 'Number of repositories that failed to be processed'
+        value: ${{ jobs.search-and-close.outputs.failed-count }}
 
 jobs:
   search-and-close:
@@ -37,6 +53,10 @@ jobs:
       count: ${{ steps.process-items.outputs.count }}
       results: ${{ steps.process-items.outputs.results }}
       targets: ${{ steps.process-items.outputs.targets }}
+      updated-repos: ${{ steps.process-items.outputs.updated-repos }}
+      updated-count: ${{ steps.process-items.outputs.updated-count }}
+      failed-repos: ${{ steps.process-items.outputs.failed-repos }}
+      failed-count: ${{ steps.process-items.outputs.failed-count }}
     steps:
       - name: Find and Close Items in Archived Repos
         id: process-items
@@ -44,18 +64,54 @@ jobs:
         env:
           DRY_RUN: ${{ inputs.dry-run }}
           RESULTS_ONLY: ${{ inputs.results-only }}
+          FAIL_ON_ERROR: ${{ inputs.fail-on-error }}
         with:
           github-token: ${{ secrets.github-token }}
           script: |
             const orgName = context.repo.owner;
-            const resultsOnly = process.env.RESULTS_ONLY === 'true';
             const isDryRun = process.env.DRY_RUN === 'true';
+            const resultsOnly = process.env.RESULTS_ONLY === 'true';
+            const failOnError = process.env.FAIL_ON_ERROR === 'true';
 
             // An array to hold flat objects for the matrix output
             const repoData = [];
+            // An object to hold repositories and their open items
+            const targets = {};
+
+            // An array to hold repositories that were updated (unarchived and re-archived)
+            const updatedRepos = [];
+
+            // An array to hold repositories that failed to be processed
+            const failedRepos = [];
+
+            const logMessage = (message: string = '', isWarning: boolean = false) => {
+              if (message.trim() === '') return;
+              if (isWarning) {
+                core.warning(message);
+              } else {
+                core.info(message);
+              }
+            };
+
+            const logOutput = (message: string = '') => {
+              logMessage(message, failedRepos.length > 0);
+              core.setOutput('updated-repos', JSON.stringify(updatedRepos));
+              core.setOutput('updated-count', updatedRepos.length);
+              core.setOutput('failed-repos', JSON.stringify(failedRepos));
+              core.setOutput('failed-count', failedRepos.length);
+            };
+
+            const logOutputAndFail = (message: string) => {
+              logOutput();
+              core.setFailed(message);
+            };
 
             if (isDryRun) {
               core.info("👀 DRY RUN ENABLED: No changes will be saved to GitHub.");
+            }
+
+            if (failOnError) {
+              core.info("💀 Fail-on-error mode enabled: The workflow will fail on the first error encountered.");
             }
 
             // 1. Query for open issues/PRs in archived repositories
@@ -72,13 +128,13 @@ jobs:
 
             if (searchResults.length === 0) {
               core.info("No open issues or PRs found in archived repositories.");
+              core.setOutput('targets', JSON.stringify(targets));
               core.setOutput('repos', JSON.stringify(repoData));
               core.setOutput('count', 0);
               return;
             }
 
             // 2. Parse search results and group items by repository for sequential processing
-            const targets = {};
             for (const item of searchResults) {
               const urlPath = new URL(item.repository_url).pathname;
               const repoName = urlPath.split('/').pop();
@@ -107,7 +163,7 @@ jobs:
             core.setOutput('count', repoData.length);
 
             if (resultsOnly && !isDryRun) {
-              core.info("🔍 Results-only mode enabled. Exiting without closing items or modifying archives.");
+              logOutput("🔍 Results-only mode enabled. Exiting without closing items or modifying archives.");
               return;
             }
 
@@ -142,14 +198,32 @@ jobs:
                   }
                 }
               } catch (error) {
-                core.error(`  ❌ Error processing ${repoName}: ${error.message}`);
+                failedRepos.push({ name: repoName, stage: 'processing', error: error.message });
+                if (!failOnError) {
+                  core.error(`  ❌ Error processing ${repoName}: ${error.message}`);
+                } else {
+                  logOutputAndFail(`  ❌ Error processing ${repoName}: ${error.message}`);
+                  return;
+                }
               } finally {
-                // Relock the repository data safe by re-archiving
+                // Relock the repository data by re-archiving it
                 try {
                   await github.rest.repos.update({ owner: orgName, repo: repoName, archived: true });
                   core.info(`  🗂️ Safely re-archived ${repoName}`);
+                  updatedRepos.push(repoName);
                 } catch (error) {
-                  core.error(`  ❌ Error re-archiving ${repoName}: ${error.message}`);
+                  failedRepos.push({ name: repoName, stage: 're-archiving', error: error.message });
+                  if (!failOnError) {
+                    core.error(`  ❌ Error re-archiving ${repoName}: ${error.message}`);
+                  } else {
+                    logOutputAndFail(`  ❌ Error re-archiving ${repoName}: ${error.message}`);
+                    return;
+                  }
                 }
               }
+            }
+            if (failedRepos.length > 0) {
+              logOutput(`⚠️ Completed with errors. Updated ${updatedRepos.length} repositories, failed to process ${failedRepos.length} repositories.`);
+            } else {
+              logOutput(`✅ Completed successfully. Updated ${updatedRepos.length} repositories, failed to process ${failedRepos.length} repositories.`);
             }
