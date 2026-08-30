@@ -49,12 +49,12 @@ jobs:
           script: |
             const orgName = context.repo.owner;
             const resultsOnly = process.env.RESULTS_ONLY === 'true';
-            const isDryRun = resultsOnly || process.env.DRY_RUN === 'true';
+            const isDryRun = process.env.DRY_RUN === 'true';
 
             // An array to hold flat objects for the matrix output
             const repoData = [];
 
-            if (isDryRun && !resultsOnly) {
+            if (isDryRun) {
               core.info("👀 DRY RUN ENABLED: No changes will be saved to GitHub.");
             }
 
@@ -106,7 +106,7 @@ jobs:
             core.setOutput('repos', JSON.stringify(repoData));
             core.setOutput('count', repoData.length);
 
-            if (resultsOnly) {
+            if (resultsOnly && !isDryRun) {
               core.info("🔍 Results-only mode enabled. Exiting without closing items or modifying archives.");
               return;
             }
