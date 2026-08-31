@@ -126,14 +126,14 @@ jobs:
 
 
             const query = `
-              query {
-                viewer {
-                  # This is the root node that forces the GitHub App to see both public and private items
-                  repositories(first: 100) {
+              query($orgName: String!) {
+                organization(login: $orgName) {
+                  # ownerAffiliations forces the backend to bypass public fallbacks and read your private tokens
+                  repositories(first: 100, ownerAffiliations: [OWNER]) {
                     nodes {
                       name
-                      isArchived
                       isPrivate
+                      isArchived
                       issues(states: OPEN, first: 100) {
                         nodes {
                           __typename
@@ -156,20 +156,20 @@ jobs:
               }
             `;
 
-            const response = await github.graphql(query);
+            const response = await github.graphql(query, { orgName: 'stairwaytowonderland' });
 
-            // Filter the repositories down to archived assets belonging to your target organization
-            const archivedRepos = response.viewer.repositories.nodes.filter(
+            // Isolate the repositories that are archived
+            const archivedRepos = response.organization.repositories.nodes.filter(
               repo => repo.isArchived
             );
 
-            // Flatten all open issues and PRs into a single combined array
+            // Flatten into a single clean list using __typename to safely identify object types
             const allArchivedItems = archivedRepos.reduce((acc, repo) => {
               return acc.concat(repo.issues.nodes, repo.pullRequests.nodes);
             }, []);
 
-            core.info(`Found ${allArchivedItems.length} open items across archived repositories.`);
-            core.info(`Raw archived items: ${JSON.stringify(allArchivedItems, null, 2)}`);
+            core.info(`Total archived items found: ${allArchivedItems.length}`);
+            core.info(`Archived repositories: ${archivedRepos.map(repo => repo.name).join(', ')}`);
 
             const searchResults = allArchivedItems;
 
