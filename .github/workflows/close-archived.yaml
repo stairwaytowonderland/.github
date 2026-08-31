@@ -39,6 +39,17 @@ jobs:
         with:
           github-token: ${{ steps.auth-token.outputs.token }}
 
+  debug:
+    name: Debug fetched archived repositories
+    runs-on: ubuntu-latest
+    needs: fetch-archived
+    steps:
+      - name: Print fetched archived repositories
+        run: |
+          echo "Fetched archived repositories: ${{ needs.fetch-archived.outputs.repos }}"
+          echo "Count: ${{ needs.fetch-archived.outputs.count }}"
+          echo "Greater than 0: ${{ needs.fetch-archived.outputs.count > 0 }}"
+
   close-issues:
     name: Close issues in archived repositories
     runs-on: ubuntu-latest
