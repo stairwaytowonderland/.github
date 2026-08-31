@@ -126,25 +126,29 @@ jobs:
 
 
             const query = `
-              query($orgName: String!) {
-                # 1. Target the organization
-                organization(login: $orgName) {
-                  # 2. Use the strict app installation layout (bypasses search filters)
-                  # This is the ONLY node that allows an App token to see private items
-                  installationRepositories(first: 100) {
+              query {
+                viewer {
+                  # This is the root node that forces the GitHub App to see both public and private items
+                  repositories(first: 100) {
                     nodes {
                       name
-                      isPrivate
                       isArchived
-
-                      # Pull the open issues natively
+                      isPrivate
                       issues(states: OPEN, first: 100) {
-                        nodes { title number url }
+                        nodes {
+                          __typename
+                          title
+                          number
+                          url
+                        }
                       }
-
-                      # Pull the open PRs natively
                       pullRequests(states: OPEN, first: 100) {
-                        nodes { title number url }
+                        nodes {
+                          __typename
+                          title
+                          number
+                          url
+                        }
                       }
                     }
                   }
@@ -152,15 +156,22 @@ jobs:
               }
             `;
 
-            const response = await github.graphql(query, { orgName: orgName });
-            const archivedRepos = response.organization.installationRepositories.nodes.filter(repo => repo.isArchived);
+            const response = await github.graphql(query);
 
-            core.info(`Found archived repos: ${archivedRepos.map(r => `${r.name} (Private: ${r.isPrivate})`).join(', ')}`);
+            // Filter the repositories down to archived assets belonging to your target organization
+            const archivedRepos = response.viewer.repositories.nodes.filter(
+              repo => repo.isArchived
+            );
 
-            const searchResults = archivedRepos.flatMap(repo => [
-              ...repo.issues.nodes,
-              ...repo.pullRequests.nodes
-            ]);
+            // Flatten all open issues and PRs into a single combined array
+            const allArchivedItems = archivedRepos.reduce((acc, repo) => {
+              return acc.concat(repo.issues.nodes, repo.pullRequests.nodes);
+            }, []);
+
+            core.info(`Found ${allArchivedItems.length} open items across archived repositories.`);
+            core.info(`Raw archived items: ${JSON.stringify(allArchivedItems, null, 2)}`);
+
+            const searchResults = allArchivedItems;
 
 
 
