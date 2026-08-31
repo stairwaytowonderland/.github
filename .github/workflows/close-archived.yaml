@@ -14,7 +14,6 @@ on:
     secrets:
       github-token:
         description: 'PAT or GitHub App Installation Token with repo permissions'
-        required: true
     outputs:
       repos:
         description: 'JSON array of repositories containing open items'
