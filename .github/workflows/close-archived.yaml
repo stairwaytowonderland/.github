@@ -161,6 +161,7 @@ jobs:
 
 
             core.info(`Found ${searchResults.length} open items across archived repositories.`);
+            core.info(`Raw search results: ${JSON.stringify(searchResults, null, 2)}`);
             core.setOutput('results', JSON.stringify(searchResults));
 
             if (searchResults.length === 0) {
