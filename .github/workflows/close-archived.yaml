@@ -54,6 +54,14 @@ jobs:
       failed-repos: ${{ steps.process-items.outputs.failed-repos }}
       failed-count: ${{ steps.process-items.outputs.failed-count }}
     steps:
+      - name: Authenticate with GitHub token
+        id: auth-token
+        uses: stairwaytowonderland/actions/.github/actions/auth-token-action@v1
+        with:
+          github-token: ${{ secrets.github-token }}
+          app-private-key: ${{ secrets.ORG_PROJECT_MGMT_PRIVATE_KEY }}
+          app-client-id: ${{ vars.ORG_PROJECT_MGMT_APP_ID }}
+
       - name: Find and Close Items in Archived Repos
         id: process-items
         uses: actions/github-script@v9
@@ -61,7 +69,7 @@ jobs:
           DRY_RUN: ${{ inputs.dry-run }}
           FAIL_ON_ERROR: ${{ inputs.fail-on-error }}
         with:
-          github-token: ${{ secrets.github-token }}
+          github-token: ${{ steps.auth-token.outputs.token }}
           script: |
             const orgName = context.repo.owner;
             const isDryRun = process.env.DRY_RUN === 'true';
