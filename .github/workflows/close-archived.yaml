@@ -122,7 +122,7 @@ jobs:
             }
 
             // 1. Query for open issues/PRs in archived repositories
-            const q = `org:${orgName} is:open archived:true`;
+            const q = `org:${orgName} is:open is:pr archived:true`;
             core.info(`Searching with query: "${q}"`);
 
             const searchResults = await github.paginate(
