@@ -125,36 +125,31 @@ jobs:
 
 
 
-            // 1. Get a definitive list of ALL repos (Public & Private) via raw database list
-            const allRepos = await github.paginate(github.rest.repos.listForOrg, {
-              org: 'stairwaytowonderland',
-              type: 'all',
-              per_page: 100
-            });
-
-            // 2. Filter for archived repositories and map their exact names
-            const archivedRepoNames = allRepos.filter(r => r.archived).map(r => r.name);
-
-            // 3. Build a fast, single GraphQL query targeting those specific repos by name
-            // This bypasses the broken "org:" search engine completely
-            const repoQueries = archivedRepoNames.map((name, index) => `
-              repo_${index}: repository(owner: "stairwaytowonderland", name: "${name}") {
-                name
-                isPrivate
-                issues(states: OPEN, first: 100) { nodes { title number url } }
-                pullRequests(states: OPEN, first: 100) { nodes { title number url } }
+            const query = `
+              query($orgName: String!) {
+                organization(login: $orgName) {
+                  repositories(first: 100) {
+                    nodes {
+                      name
+                      isPrivate
+                      isArchived
+                      issues(states: OPEN, first: 100) { nodes { title number url } }
+                      pullRequests(states: OPEN, first: 100) { nodes { title number url } }
+                    }
+                  }
+                }
               }
-            `).join('\n');
+            `;
 
-            const query = `query { ${repoQueries} }`;
+            const response = await github.graphql(query, { orgName: orgName });
+            const archivedRepos = response.organization.repositories.nodes.filter(repo => repo.isArchived);
 
-            // 4. Execute the single unified graph query
-            const response = await github.graphql(query);
+            core.info(`Found archived repos: ${archivedRepos.map(r => `${r.name} (Private: ${r.isPrivate})`).join(', ')}`);
 
-
-
-            // Convert the dynamic map into a clean, flat list of results
-            const searchResults = Object.values(response);
+            const searchResults = archivedRepos.flatMap(repo => [
+              ...repo.issues.nodes,
+              ...repo.pullRequests.nodes
+            ]);
 
 
 
