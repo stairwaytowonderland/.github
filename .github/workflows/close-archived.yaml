@@ -122,13 +122,54 @@ jobs:
             }
 
             // 1. Query for open issues/PRs in archived repositories
-            const q = `org:${orgName} is:open is:pr archived:true`;
-            core.info(`Searching with query: "${q}"`);
 
-            const searchResults = await github.paginate(
-              github.rest.search.issuesAndPullRequests,
-              { q, per_page: 100 }
-            );
+
+            const query = `
+              query($queryString: String!, $cursor: String) {
+                search(query: $queryString, type: ISSUE, first: 100, after: $cursor) {
+                  pageInfo {
+                    hasNextPage
+                    endCursor
+                  }
+                  nodes {
+                    __typename
+                    ... on Issue {
+                      title
+                      number
+                      url
+                    }
+                    ... on PullRequest {
+                      title
+                      number
+                      url
+                    }
+                  }
+                }
+              }
+            `;
+
+            let searchResults = [];
+            let hasNextPage = true;
+            let cursor = null;
+
+            while (hasNextPage) {
+              const response = await github.graphql(query, {
+                queryString: `org:${orgName} is:open archived:true`,
+                cursor: cursor
+              });
+
+              const { nodes, pageInfo } = response.search;
+              searchResults.push(...nodes);
+
+              hasNextPage = pageInfo.hasNextPage;
+              cursor = pageInfo.endCursor;
+            }
+
+
+
+
+
+
 
             core.info(`Found ${searchResults.length} open items across archived repositories.`);
             core.setOutput('results', JSON.stringify(searchResults));
@@ -140,14 +181,15 @@ jobs:
 
             // 2. Parse search results and group items by repository for sequential processing
             for (const item of searchResults) {
-              const urlPath = new URL(item.repository_url).pathname;
-              const repoName = urlPath.split('/').pop();
-              const isPR = Object.hasOwn(item, 'pull_request');
+              const urlPath = new URL(item.url).pathname;
+              const repoName = urlPath.split('/')[1];
+              const isPR = item.__typename === 'PullRequest';
+              core.info(`  🔍 Processing item: [${item.title}](${item.url}) (${isPR ? 'PR' : 'Issue'})`);
 
               if (!targets[repoName]) {
                 targets[repoName] = [];
               }
-              targets[repoName].push({ number: item.number, isPR, title: item.title, html_url: item.html_url });
+              targets[repoName].push({ number: item.number, isPR, title: item.title, url: item.url });
             }
 
             // 3. Process each repository sequentially (only if not a dry run)
