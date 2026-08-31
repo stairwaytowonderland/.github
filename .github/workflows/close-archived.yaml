@@ -126,33 +126,40 @@ jobs:
 
 
             const query = `
-              query($queryString: String!) {
-                search(query: $queryString, type: ISSUE, first: 100) {
-                  nodes {
-                    ... on Issue {
-                      title
-                      number
-                      url
-                    }
-                    ... on PullRequest {
-                      title
-                      number
-                      url
+              query($orgName: String!) {
+                organization(login: $orgName) {
+                  repositories(first: 100, privacy: PUBLIC) {
+                    nodes {
+                      name
+                      isArchived
+
+                      # Directly target open issues for this repo
+                      issues(states: OPEN, first: 100) {
+                        nodes { title number url }
+                      }
+
+                      # Directly target open PRs for this repo
+                      pullRequests(states: OPEN, first: 100) {
+                        nodes { title number url }
+                      }
                     }
                   }
                 }
               }
             `;
 
-            const response = await github.graphql(query, {
-              queryString: "org:stairwaytowonderland is:open archived:true"
-            });
+            const response = await github.graphql(query, { orgName: 'stairwaytowonderland' });
 
-            // Returns a single list containing both matching issues and pull requests
-            core.info(response.search.nodes);
-            core.info(JSON.stringify(response.search.nodes));
+            // Cleanly isolate items belonging strictly to archived repositories
+            const archivedRepos = response.organization.repositories.nodes.filter(repo => repo.isArchived);
 
-            const searchResults = response.search.nodes;
+            core.info(archivedRepos)
+            core.info(JSON.stringify(archivedRepos));
+
+            const searchResults = archivedRepos.flatMap(repo => [
+              ...repo.issues.nodes.map(issue => ({ ...issue, __typename: 'Issue' })),
+              ...repo.pullRequests.nodes.map(pr => ({ ...pr, __typename: 'PullRequest' }))
+            ]);
 
 
 
