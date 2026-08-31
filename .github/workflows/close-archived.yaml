@@ -7,10 +7,6 @@ on:
         description: 'Dry Run (Log actions without closing items or modifying archives)'
         type: boolean
         default: true
-      results-only:
-        description: 'Whether to only return results without closing items or modifying archives'
-        type: boolean
-        default: false
       fail-on-error:
         description: 'Whether to fail the workflow if any errors occur during processing'
         type: boolean
@@ -63,14 +59,12 @@ jobs:
         uses: actions/github-script@v9
         env:
           DRY_RUN: ${{ inputs.dry-run }}
-          RESULTS_ONLY: ${{ inputs.results-only }}
           FAIL_ON_ERROR: ${{ inputs.fail-on-error }}
         with:
           github-token: ${{ secrets.github-token }}
           script: |
             const orgName = context.repo.owner;
             const isDryRun = process.env.DRY_RUN === 'true';
-            const resultsOnly = process.env.RESULTS_ONLY === 'true';
             const failOnError = process.env.FAIL_ON_ERROR === 'true';
 
             // An array to hold flat objects for the matrix output
@@ -93,6 +87,14 @@ jobs:
 
             const logOutput = (message = '') => {
               logMessage(message, failedRepos.length > 0);
+
+              core.info(`Targets: ${JSON.stringify(targets)}`);
+              core.info(`repoData: ${JSON.stringify(repoData)}`);
+
+              core.setOutput('targets', JSON.stringify(targets));
+              core.setOutput('repos', JSON.stringify(repoData));
+              core.setOutput('count', repoData.length);
+
               core.setOutput('updated-repos', JSON.stringify(updatedRepos));
               core.setOutput('updated-count', updatedRepos.length);
               core.setOutput('failed-repos', JSON.stringify(failedRepos));
@@ -125,10 +127,7 @@ jobs:
             core.setOutput('results', JSON.stringify(searchResults));
 
             if (searchResults.length === 0) {
-              core.info("No open issues or PRs found in archived repositories.");
-              core.setOutput('targets', JSON.stringify(targets));
-              core.setOutput('repos', JSON.stringify(repoData));
-              core.setOutput('count', 0);
+              logOutput("No open issues or PRs found in archived repositories.");
               return;
             }
 
@@ -141,33 +140,20 @@ jobs:
               if (!targets[repoName]) {
                 targets[repoName] = [];
               }
-              targets[repoName].push({ number: item.number, isPR, title: item.title });
+              targets[repoName].push({ number: item.number, isPR, title: item.title, html_url: item.html_url });
+            }
+
+            // 3. Process each repository sequentially (only if not a dry run)
+            for (const [repoName, items] of Object.entries(targets)) {
+              core.info(`\n📦 Repository: ${repoName} (${items.length} open items)`);
 
               // Construct the flat object requested for the downstream matrix output
               repoData.push({
                 orgName,
                 name: repoName,
                 url: `https://github.com/${orgName}/${repoName}`,
-                html_url: item.html_url,
-                repository_url: item.repository_url
+                items: items
               });
-            }
-
-            core.info(`Targets: ${JSON.stringify(targets)}`);
-            core.info(`repoData: ${JSON.stringify(repoData)}`);
-
-            core.setOutput('targets', JSON.stringify(targets));
-            core.setOutput('repos', JSON.stringify(repoData));
-            core.setOutput('count', repoData.length);
-
-            if (resultsOnly && !isDryRun) {
-              logOutput("🔍 Results-only mode enabled. Exiting without closing items or modifying archives.");
-              return;
-            }
-
-            // 3. Process each repository sequentially (only if not a dry run)
-            for (const [repoName, items] of Object.entries(targets)) {
-              core.info(`\n📦 Repository: ${repoName} (${items.length} open items)`);
 
               if (isDryRun) {
                 for (const item of items) {
