@@ -121,18 +121,14 @@ jobs:
               core.info("💀 Fail-on-error mode enabled: The workflow will fail on the first error encountered.");
             }
 
-            // 1. Query for open issues/PRs in archived repositories
+
+
 
 
             const query = `
-              query($queryString: String!, $cursor: String) {
-                search(query: $queryString, type: ISSUE, first: 100, after: $cursor) {
-                  pageInfo {
-                    hasNextPage
-                    endCursor
-                  }
+              query($queryString: String!) {
+                search(query: $queryString, type: ISSUE, first: 100) {
                   nodes {
-                    __typename
                     ... on Issue {
                       title
                       number
@@ -148,23 +144,15 @@ jobs:
               }
             `;
 
-            let searchResults = [];
-            let hasNextPage = true;
-            let cursor = null;
+            const response = await github.graphql(query, {
+              queryString: "org:stairwaytowonderland is:open archived:true"
+            });
 
-            while (hasNextPage) {
-              const response = await github.graphql(query, {
-                queryString: `org:${orgName} is:open archived:true`,
-                cursor: cursor
-              });
+            // Returns a single list containing both matching issues and pull requests
+            core.info(response.search.nodes);
+            core.info(JSON.stringify(response.search.nodes));
 
-              const { nodes, pageInfo } = response.search;
-              searchResults.push(...nodes);
-
-              hasNextPage = pageInfo.hasNextPage;
-              cursor = pageInfo.endCursor;
-            }
-
+            const searchResults = response.search.nodes;
 
 
 
