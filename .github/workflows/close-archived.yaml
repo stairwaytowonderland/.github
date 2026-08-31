@@ -125,39 +125,35 @@ jobs:
 
 
 
-            const query = `
-              query($queryString: String!) {
-                search(query: $queryString, type: REPOSITORY, first: 100) {
-                  nodes {
-                    ... on Repository {
-                      name
-                      isPrivate
-                      issues(states: OPEN, first: 100) {
-                        nodes { title number url }
-                      }
-                      pullRequests(states: OPEN, first: 100) {
-                        nodes { title number url }
-                      }
-                    }
-                  }
-                }
-              }
-            `;
-
-            const response = await github.graphql(query, {
-              queryString: "org:stairwaytowonderland archived:true"
+            // 1. Get a definitive list of ALL repos (Public & Private) via raw database list
+            const allRepos = await github.paginate(github.rest.repos.listForOrg, {
+              org: 'stairwaytowonderland',
+              per_page: 100
             });
 
-            // A clean array of your organization's archived repositories (both public and private)
-            const archivedRepos = response.search.nodes;
+            // 2. Filter for archived repositories and map their exact names
+            const archivedRepoNames = allRepos.filter(r => r.archived).map(r => r.name);
 
-            core.info(archivedRepos)
-            core.info(JSON.stringify(archivedRepos));
+            // 3. Build a fast, single GraphQL query targeting those specific repos by name
+            // This bypasses the broken "org:" search engine completely
+            const repoQueries = archivedRepoNames.map((name, index) => `
+              repo_${index}: repository(owner: "stairwaytowonderland", name: "${name}") {
+                name
+                isPrivate
+                issues(states: OPEN, first: 100) { nodes { title number url } }
+                pullRequests(states: OPEN, first: 100) { nodes { title number url } }
+              }
+            `).join('\n');
 
-            const searchResults = archivedRepos.flatMap(repo => [
-              ...repo.issues.nodes.map(issue => ({ ...issue, __typename: 'Issue' })),
-              ...repo.pullRequests.nodes.map(pr => ({ ...pr, __typename: 'PullRequest' }))
-            ]);
+            const query = `query { ${repoQueries} }`;
+
+            // 4. Execute the single unified graph query
+            const response = await github.graphql(query);
+
+
+
+            // Convert the dynamic map into a clean, flat list of results
+            const searchResults = Object.values(response);
 
 
 
