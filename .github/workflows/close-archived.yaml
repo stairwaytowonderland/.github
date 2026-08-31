@@ -127,14 +127,25 @@ jobs:
 
             const query = `
               query($orgName: String!) {
+                # 1. Target the organization
                 organization(login: $orgName) {
-                  repositories(first: 100) {
+                  # 2. Use the strict app installation layout (bypasses search filters)
+                  # This is the ONLY node that allows an App token to see private items
+                  installationRepositories(first: 100) {
                     nodes {
                       name
                       isPrivate
                       isArchived
-                      issues(states: OPEN, first: 100) { nodes { title number url } }
-                      pullRequests(states: OPEN, first: 100) { nodes { title number url } }
+
+                      # Pull the open issues natively
+                      issues(states: OPEN, first: 100) {
+                        nodes { title number url }
+                      }
+
+                      # Pull the open PRs natively
+                      pullRequests(states: OPEN, first: 100) {
+                        nodes { title number url }
+                      }
                     }
                   }
                 }
@@ -142,7 +153,7 @@ jobs:
             `;
 
             const response = await github.graphql(query, { orgName: orgName });
-            const archivedRepos = response.organization.repositories.nodes.filter(repo => repo.isArchived);
+            const archivedRepos = response.organization.installationRepositories.nodes.filter(repo => repo.isArchived);
 
             core.info(`Found archived repos: ${archivedRepos.map(r => `${r.name} (Private: ${r.isPrivate})`).join(', ')}`);
 
