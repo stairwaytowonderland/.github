@@ -1,57 +1,29 @@
-name: Reusable Search-Driven Archived Repo Cleanup
+name: 🗃️ Manage Dependencies PRs
 
 on:
+  # schedule:
+  #   - cron: '0 6 * * *'
   workflow_call:
     inputs:
       dry-run:
-        description: 'Dry Run (Log actions without closing items or modifying archives)'
-        type: boolean
-        default: true
-      fail-on-error:
-        description: 'Whether to fail the workflow if any errors occur during processing'
+        description: 'Dry run mode'
+        required: false
         type: boolean
         default: true
     secrets:
       github-token:
-        description: 'PAT or GitHub App Installation Token with repo permissions'
-    outputs:
-      repos:
-        description: 'JSON array of repositories containing open items'
-        value: ${{ jobs.search-and-close.outputs.repos }}
-      count:
-        description: 'Number of repositories containing open items'
-        value: ${{ jobs.search-and-close.outputs.count }}
-      targets:
-        description: 'JSON object of repositories and their open items'
-        value: ${{ jobs.search-and-close.outputs.targets }}
-      results:
-        description: 'JSON array of all open issues and PRs found in archived repositories'
-        value: ${{ jobs.search-and-close.outputs.results }}
-      updated-repos:
-        description: 'JSON array of repositories that were updated (unarchived and re-archived)'
-        value: ${{ jobs.search-and-close.outputs.updated-repos }}
-      updated-count:
-        description: 'Number of repositories that were updated (unarchived and re-archived)'
-        value: ${{ jobs.search-and-close.outputs.updated-count }}
-      failed-repos:
-        description: 'JSON array of repositories that failed to be processed'
-        value: ${{ jobs.search-and-close.outputs.failed-repos }}
-      failed-count:
-        description: 'Number of repositories that failed to be processed'
-        value: ${{ jobs.search-and-close.outputs.failed-count }}
+        description: 'GitHub token with repo access'
+
+permissions:
+  contents: read
 
 jobs:
-  search-and-close:
+  fetch-archived:
+    name: Fetch issues in archived repositories
     runs-on: ubuntu-latest
     outputs:
-      repos: ${{ steps.process-items.outputs.repos }}
-      count: ${{ steps.process-items.outputs.count }}
-      results: ${{ steps.process-items.outputs.results }}
-      targets: ${{ steps.process-items.outputs.targets }}
-      updated-repos: ${{ steps.process-items.outputs.updated-repos }}
-      updated-count: ${{ steps.process-items.outputs.updated-count }}
-      failed-repos: ${{ steps.process-items.outputs.failed-repos }}
-      failed-count: ${{ steps.process-items.outputs.failed-count }}
+      repos: ${{ steps.fetch-archived.outputs.repos }}
+      count: ${{ steps.fetch-archived.outputs.count }}
     steps:
       - name: Authenticate with GitHub token
         id: auth-token
@@ -61,211 +33,117 @@ jobs:
           app-private-key: ${{ secrets.ORG_PROJECT_MGMT_PRIVATE_KEY }}
           app-client-id: ${{ vars.ORG_PROJECT_MGMT_APP_ID }}
 
-      - name: Find and Close Items in Archived Repos
-        id: process-items
+      - name: Fetch Archived Repositories
+        id: fetch-archived
+        uses: stairwaytowonderland/actions/.github/actions/fetch-archived-action@v1
+        with:
+          github-token: ${{ steps.auth-token.outputs.token }}
+
+  close-issues:
+    name: Close issues in archived repositories
+    runs-on: ubuntu-latest
+    needs: fetch-archived
+    if: needs.fetch-archived.outputs.count > 0
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.fetch-archived.outputs.repos) }}
+    steps:
+      - name: Authenticate with GitHub token
+        id: auth-token
+        uses: stairwaytowonderland/actions/.github/actions/auth-token-action@v1
+        with:
+          # github-token: ${{ secrets.github-token }}
+          app-private-key: ${{ secrets.ORG_PROJECT_MGMT_PRIVATE_KEY }}
+          app-client-id: ${{ vars.ORG_PROJECT_MGMT_APP_ID }}
+
+      - name: Process items for ${{ matrix.repo.name }}
         uses: actions/github-script@v9
         env:
           DRY_RUN: ${{ inputs.dry-run }}
-          FAIL_ON_ERROR: ${{ inputs.fail-on-error }}
+          REPO_NAME: ${{ matrix.repo.name }}
+          ORG_NAME: ${{ matrix.repo.orgName }}
         with:
           github-token: ${{ steps.auth-token.outputs.token }}
           script: |
-            const orgName = context.repo.owner;
+            const repo = process.env.REPO_NAME;
+            const owner = process.env.ORG_NAME;
             const isDryRun = process.env.DRY_RUN === 'true';
-            const failOnError = process.env.FAIL_ON_ERROR === 'true';
 
-            // An array to hold flat objects for the matrix output
-            const repoData = [];
-            // An object to hold repositories and their open items
-            const targets = {};
-            // An array to hold repositories that were updated (unarchived and re-archived)
-            const updatedRepos = [];
-            // An array to hold repositories that failed to be processed
-            const failedRepos = [];
+            const summaryClosed = [];
+            const summaryErrors = [];
+            const items = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: 'open'
+            });
 
-            const logMessage = (message = '', isWarning = false) => {
-              if (message.trim() === '') return;
-              if (isWarning) {
-                core.warning(message);
-              } else {
-                core.info(message);
-              }
-            };
-
-            const logOutput = (message = '') => {
-              logMessage(message, failedRepos.length > 0);
-
-              core.info(`Targets: ${JSON.stringify(targets)}`);
-              core.info(`repoData: ${JSON.stringify(repoData)}`);
-
-              core.setOutput('targets', JSON.stringify(targets));
-              core.setOutput('repos', JSON.stringify(repoData));
-              core.setOutput('count', repoData.length);
-
-              core.setOutput('updated-repos', JSON.stringify(updatedRepos));
-              core.setOutput('updated-count', updatedRepos.length);
-              core.setOutput('failed-repos', JSON.stringify(failedRepos));
-              core.setOutput('failed-count', failedRepos.length);
-            };
-
-            const logOutputAndFail = (message = '') => {
-              logOutput();
-              core.setFailed(message);
-            };
+            core.info(`ℹ️ Found ${items.length} open items in ${repo}`);
 
             if (isDryRun) {
-              core.info("👀 DRY RUN ENABLED: No changes will be saved to GitHub.");
+              core.info(`👀 Dry run: Would process ${items.length} open items in ${repo}`);
             }
 
-            if (failOnError) {
-              core.info("💀 Fail-on-error mode enabled: The workflow will fail on the first error encountered.");
-            }
-
-
-
-
-
-            const query = `
-              query($orgName: String!) {
-                organization(login: $orgName) {
-                  # ownerAffiliations forces the backend to bypass public fallbacks and read your private tokens
-                  repositories(first: 100, ownerAffiliations: [OWNER]) {
-                    nodes {
-                      name
-                      isPrivate
-                      isArchived
-                      issues(states: OPEN, first: 100) {
-                        nodes {
-                          __typename
-                          title
-                          number
-                          url
-                        }
-                      }
-                      pullRequests(states: OPEN, first: 100) {
-                        nodes {
-                          __typename
-                          title
-                          number
-                          url
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            `;
-
-            const response = await github.graphql(query, { orgName: 'stairwaytowonderland' });
-
-            // Isolate the repositories that are archived
-            const archivedRepos = response.organization.repositories.nodes.filter(
-              repo => repo.isArchived
-            );
-
-            // Flatten into a single clean list using __typename to safely identify object types
-            const allArchivedItems = archivedRepos.reduce((acc, repo) => {
-              return acc.concat(repo.issues.nodes, repo.pullRequests.nodes);
-            }, []);
-
-            core.info(`Total archived items found: ${allArchivedItems.length}`);
-            core.info(`Archived repositories: ${archivedRepos.map(repo => repo.name).join(', ')}`);
-
-            const searchResults = allArchivedItems;
-
-
-
-
-
-
-            core.info(`Found ${searchResults.length} open items across archived repositories.`);
-            core.info(`Raw search results: ${JSON.stringify(searchResults, null, 2)}`);
-            core.setOutput('results', JSON.stringify(searchResults));
-
-            if (searchResults.length === 0) {
-              logOutput("No open issues or PRs found in archived repositories.");
+            if (items.length === 0) {
+              core.warning(`⚠️ No open items found in ${repo}, skipping...`);
               return;
             }
 
-            // 2. Parse search results and group items by repository for sequential processing
-            for (const item of searchResults) {
-              const urlPath = new URL(item.url).pathname;
-              const repoName = urlPath.split('/')[1];
-              const isPR = item.__typename === 'PullRequest';
-              core.info(`  🔍 Processing item: [${item.title}](${item.url}) (${isPR ? 'PR' : 'Issue'})`);
-
-              if (!targets[repoName]) {
-                targets[repoName] = [];
-              }
-              targets[repoName].push({ number: item.number, isPR, title: item.title, url: item.url });
-            }
-
-            // 3. Process each repository sequentially (only if not a dry run)
-            for (const [repoName, items] of Object.entries(targets)) {
-              core.info(`\n📦 Repository: ${repoName} (${items.length} open items)`);
-
-              // Construct the flat object requested for the downstream matrix output
-              repoData.push({
-                orgName,
-                name: repoName,
-                url: `https://github.com/${orgName}/${repoName}`,
-                items: items
-              });
-
+            try {
+              // Unarchive the repository temporarily to close issues and PRs
               if (isDryRun) {
-                for (const item of items) {
-                  const type = item.isPR ? 'PR' : 'Issue';
-                  core.info(`  [DRY RUN] Would close ${type} #${item.number}: "${item.title}"`);
-                }
-                continue;
+                core.info(`👀 Dry run: Would unarchive ${repo}`);
+              } else {
+                await github.rest.repos.update({ owner, repo, archived: false });
+                core.info(`📂 Temporarily unarchived ${repo}`);
               }
 
-              try {
-                // Temporarily unarchive to allow mutation
-                await github.rest.repos.update({ owner: orgName, repo: repoName, archived: false });
-                core.info(`  📂 Temporarily unarchived ${repoName}`);
+              // Safely handle all items sequentially on this single runner
+              for (const item of items) {
+                const isPR = !!item.pull_request;
+                const type = isPR ? 'PR' : 'Issue';
 
-                for (const item of items) {
-                  if (item.isPR) {
-                    await github.rest.pulls.update({
-                      owner: orgName, repo: repoName, pull_number: item.number, state: 'closed'
-                    });
-                    core.info(`  ✅ Closed PR #${item.number}`);
-                  } else {
-                    await github.rest.issues.update({
-                      owner: orgName, repo: repoName, issue_number: item.number, state: 'closed', state_reason: 'not_planned'
-                    });
-                    core.info(`  ✅ Closed Issue #${item.number}`);
-                  }
+                if (isDryRun) {
+                  core.info(`👀 Dry run: Would close ${type} #${item.number}: "${item.title}"`);
+                  continue;
                 }
 
-                updatedRepos.push(repoName);
-              } catch (error) {
-                failedRepos.push({ name: repoName, stage: 'processing', error: error.message });
-                if (!failOnError) {
-                  core.error(`  ❌ Error processing ${repoName}: ${error.message}`);
+                if (isPR) {
+                  await github.rest.pulls.update({ owner, repo, pull_number: item.number, state: 'closed' });
+                  core.info(`✅ Closed PR #${item.number}`);
+                  summaryClosed.push(`PR #${item.number}: "${item.title}"`);
+                  summaryClosed.push(`- **${repo}**: Closed PR [#${item.number}](${item.html_url})`);
                 } else {
-                  logOutputAndFail(`  ❌ Error processing ${repoName}: ${error.message}`);
-                  return;
-                }
-              } finally {
-                // Relock the repository data by re-archiving it
-                try {
-                  await github.rest.repos.update({ owner: orgName, repo: repoName, archived: true });
-                  core.info(`  🗂️ Safely re-archived ${repoName}`);
-                } catch (error) {
-                  failedRepos.push({ name: repoName, stage: 're-archiving', error: error.message });
-                  if (!failOnError) {
-                    core.error(`  ❌ Error re-archiving ${repoName}: ${error.message}`);
-                  } else {
-                    logOutputAndFail(`  ❌ Error re-archiving ${repoName}: ${error.message}`);
-                    return;
-                  }
+                  await github.rest.issues.update({ owner, repo, issue_number: item.number, state: 'closed', state_reason: 'not_planned' });
+                  core.info(`✅ Closed Issue #${item.number}`);
+                  summaryClosed.push(`Issue #${item.number}: "${item.title}"`);
+                  summaryClosed.push(`- **${repo}**: Closed Issue [#${item.number}](${item.html_url})`);
                 }
               }
+            } catch (error) {
+              core.error(`❌ Error processing item: ${error.message}`);
+              summaryErrors.push(`- **${repo}**: ${error.message}`);
+            } finally {
+              // Lock the archive back down safely
+              try {
+                if (isDryRun) {
+                  core.info(`👀 Dry run: Would re-archive ${repo}`);
+                } else {
+                  await github.rest.repos.update({ owner, repo, archived: true });
+                  core.info(`🗂️ Safely re-archived ${repo}`);
+                }
+              } catch (error) {
+                core.setFailed(`❌ Error re-archiving repository ${repo}: ${error.message}`);
+                return;
+              }
             }
-            if (failedRepos.length > 0) {
-              logOutput(`⚠️ Completed with errors. Updated ${updatedRepos.length} repositories, failed to process ${failedRepos.length} repositories.`);
-            } else {
-              logOutput(`✅ Completed successfully. Updated ${updatedRepos.length} repositories, failed to process ${failedRepos.length} repositories.`);
-            }
+
+            await core.summary
+              .addHeading(`Archived Repository Issue Cleanup Summary for ${repo}`)
+              .addText(`**Execution Mode:** ${isDryRun ? 'Dry Run' : 'Actual Run'}`)
+              .addText(`Target Owner context evaluated as: **${owner}**`)
+              .addHeading(isDryRun ? 'PRs and Issues Identified for Closing' : 'Closed PRs and Issues', 3)
+              .addText(summaryClosed.length > 0 ? summaryClosed.join('\n') : 'No open issues found in archived repositories.')
+              .addHeading('Errors Encountered', 3)
+              .addText(summaryErrors.length > 0 ? summaryErrors.join('\n') : 'None.')
+              .write();
