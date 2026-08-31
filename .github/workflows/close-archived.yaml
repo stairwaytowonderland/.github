@@ -128,6 +128,7 @@ jobs:
             // 1. Get a definitive list of ALL repos (Public & Private) via raw database list
             const allRepos = await github.paginate(github.rest.repos.listForOrg, {
               org: 'stairwaytowonderland',
+              type: 'all',
               per_page: 100
             });
 
