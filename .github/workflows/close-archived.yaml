@@ -128,7 +128,7 @@ jobs:
             const query = `
               query($orgName: String!) {
                 organization(login: $orgName) {
-                  repositories(first: 100, privacy: PUBLIC) {
+                  repositories(first: 100) {
                     nodes {
                       name
                       isArchived
@@ -148,7 +148,7 @@ jobs:
               }
             `;
 
-            const response = await github.graphql(query, { orgName: 'stairwaytowonderland' });
+            const response = await github.graphql(query, { orgName: orgName });
 
             // Cleanly isolate items belonging strictly to archived repositories
             const archivedRepos = response.organization.repositories.nodes.filter(repo => repo.isArchived);
