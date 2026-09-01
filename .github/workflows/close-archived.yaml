@@ -101,11 +101,11 @@ jobs:
 
             const logSummaryClosed = (item, type) => {
               summaryClosed.push(`${type} #${item.number}: "${item.title}"`);
-              summaryClosed.push(`- **${repo}**: Closed ${type} [#${item.number}](${item.html_url})`);
+              summaryClosed.push(`  **${repo}**: Closed ${type} [#${item.number}](${item.html_url})`);
             };
 
             const logSummaryError = (repo, error) => {
-              summaryErrors.push(`- **${repo}**: ${error.message}`);
+              summaryErrors.push(`**${repo}**: ${error.message}`);
             };
 
             const items = await github.paginate(github.rest.issues.listForRepo, {
