@@ -105,7 +105,7 @@ jobs:
             };
 
             const logSummaryError = (repo, error) => {
-              summaryErrors.push(`  **${repo}**: ${error.message}`);
+              summaryErrors.push(`- **${repo}**: ${error.message}`);
             };
 
             const items = await github.paginate(github.rest.issues.listForRepo, {
