@@ -45,9 +45,11 @@ jobs:
 
       - name: Fetch Archived Repositories
         id: fetch-archived
-        uses: stairwaytowonderland/actions/.github/actions/fetch-archived-action@v1
+        uses: stairwaytowonderland/actions/.github/actions/fetch-owner-repos-action@v1
         with:
           github-token: ${{ steps.auth-token.outputs.token }}
+          is-archived: true
+          has-issues: true
 
   # verify:
   #   name: Verify fetched data
