@@ -25,13 +25,23 @@ jobs:
       repos: ${{ steps.fetch-archived.outputs.repos }}
       count: ${{ steps.fetch-archived.outputs.count }}
     steps:
+      # - name: Authenticate with GitHub token
+      #   id: auth-token
+      #   uses: stairwaytowonderland/actions/.github/actions/auth-token-action@v1
+      #   with:
+      #     github-token: ${{ secrets.github-token }}
+      #     app-private-key: ${{ secrets.ORG_PROJECT_MGMT_PRIVATE_KEY }}
+      #     app-client-id: ${{ vars.ORG_PROJECT_MGMT_APP_ID }}
+      #     repo-owner: ${{ github.repository_owner }}
+
       - name: Authenticate with GitHub token
         id: auth-token
-        uses: stairwaytowonderland/actions/.github/actions/auth-token-action@v1
+        uses: actions/create-github-app-token@v3
         with:
-          github-token: ${{ secrets.github-token }}
-          app-private-key: ${{ secrets.ORG_PROJECT_MGMT_PRIVATE_KEY }}
-          app-client-id: ${{ vars.ORG_PROJECT_MGMT_APP_ID }}
+          client-id: ${{ vars.ORG_PROJECT_MGMT_APP_ID }}
+          private-key: ${{ secrets.ORG_PROJECT_MGMT_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          # repositories: ${{ github.repository }}
 
       - name: Fetch Archived Repositories
         id: fetch-archived
@@ -39,19 +49,19 @@ jobs:
         with:
           github-token: ${{ steps.auth-token.outputs.token }}
 
-  verify:
-    name: Verify fetched data
-    runs-on: ubuntu-latest
-    needs: fetch-archived
-    env:
-      REPOS: ${{ needs.fetch-archived.outputs.repos }}
-      COUNT: ${{ needs.fetch-archived.outputs.count }}
-      GREATER_THAN_ZERO: ${{ needs.fetch-archived.outputs.count > 0 }}
-    steps:
-      - name: Print fetched archived repositories
-        run: |
-          echo "Repos: $REPOS"
-          echo "Count: $COUNT ($COUNT > 0: $GREATER_THAN_ZERO)"
+  # verify:
+  #   name: Verify fetched data
+  #   runs-on: ubuntu-latest
+  #   needs: fetch-archived
+  #   env:
+  #     REPOS: ${{ needs.fetch-archived.outputs.repos }}
+  #     COUNT: ${{ needs.fetch-archived.outputs.count }}
+  #     GREATER_THAN_ZERO: ${{ needs.fetch-archived.outputs.count > 0 }}
+  #   steps:
+  #     - name: Print fetched archived repositories
+  #       run: |
+  #         echo "Repos: $REPOS"
+  #         echo "Count: $COUNT ($COUNT > 0: $GREATER_THAN_ZERO)"
 
   close-issues:
     name: Close issues in archived repositories
@@ -75,8 +85,8 @@ jobs:
         uses: actions/github-script@v9
         env:
           DRY_RUN: ${{ inputs.dry-run }}
-          REPO_NAME: ${{ matrix.repo.name }}
-          ORG_NAME: ${{ matrix.repo.orgName }}
+          REPO_NAME: ${{ matrix.name }}
+          ORG_NAME: ${{ matrix.orgName }}
         with:
           github-token: ${{ steps.auth-token.outputs.token }}
           script: |
