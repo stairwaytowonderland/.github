@@ -100,8 +100,8 @@ jobs:
             const summaryErrors = [];
 
             const logSummaryClosed = (item, type) => {
-              summaryClosed.push(`- ${type} #${item.number}: "${item.title}"`);
-              summaryClosed.push(`  **${repo}**: Closed ${type} [#${item.number}](${item.html_url})`);
+              summaryClosed.push(`- **${repo}**: Closed ${type} [#${item.number}](${item.html_url})`);
+              summaryClosed.push(`  ${type} #${item.number}: "${item.title}"`);
             };
 
             const logSummaryError = (repo, error) => {
