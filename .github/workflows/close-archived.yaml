@@ -83,19 +83,19 @@ jobs:
           app-private-key: ${{ secrets.ORG_PROJECT_MGMT_PRIVATE_KEY }}
           app-client-id: ${{ vars.ORG_PROJECT_MGMT_APP_ID }}
           repo-name: ${{ matrix.name }}
-          repo-owner: ${{ matrix.org }}
+          repo-owner: ${{ matrix.owner }}
 
       - name: Process items for ${{ matrix.name }}
         uses: actions/github-script@v9
         env:
           DRY_RUN: ${{ inputs.dry-run }}
           REPO_NAME: ${{ matrix.name }}
-          ORG_NAME: ${{ matrix.org }}
+          OWNER_NAME: ${{ matrix.owner }}
         with:
           github-token: ${{ steps.auth-token.outputs.token }}
           script: |
             const repo = process.env.REPO_NAME;
-            const owner = process.env.ORG_NAME;
+            const owner = process.env.OWNER_NAME;
             const isDryRun = process.env.DRY_RUN === 'true';
 
             const summaryClosed = [];
