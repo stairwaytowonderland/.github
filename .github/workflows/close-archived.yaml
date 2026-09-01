@@ -99,10 +99,14 @@ jobs:
             const summaryClosed = [];
             const summaryErrors = [];
 
-            const query = [
-              `repo:${owner}/${repo}`,
-              `is:open`
-            ];
+            const logSummaryClosed = (item, type) => {
+              summaryClosed.push(`${type} #${item.number}: "${item.title}"`);
+              summaryClosed.push(`- **${repo}**: Closed ${type} [#${item.number}](${item.html_url})`);
+            };
+
+            const logSummaryError = (repo, error) => {
+              summaryErrors.push(`- **${repo}**: ${error.message}`);
+            };
 
             const items = await github.paginate(github.rest.issues.listForRepo, {
               owner,
@@ -138,24 +142,22 @@ jobs:
 
                 if (isDryRun) {
                   core.info(`👀 Dry run: Would close ${type} #${item.number}: "${item.title}"`);
+                  logSummaryClosed(item, type);
                   continue;
                 }
 
                 if (isPR) {
                   await github.rest.pulls.update({ owner, repo, pull_number: item.number, state: 'closed' });
-                  core.info(`✅ Closed PR #${item.number}`);
-                  summaryClosed.push(`PR #${item.number}: "${item.title}"`);
-                  summaryClosed.push(`- **${repo}**: Closed PR [#${item.number}](${item.html_url})`);
                 } else {
                   await github.rest.issues.update({ owner, repo, issue_number: item.number, state: 'closed', state_reason: 'not_planned' });
-                  core.info(`✅ Closed Issue #${item.number}`);
-                  summaryClosed.push(`Issue #${item.number}: "${item.title}"`);
-                  summaryClosed.push(`- **${repo}**: Closed Issue [#${item.number}](${item.html_url})`);
                 }
+
+                core.info(`✅ Closed ${type} #${item.number}`);
+                logSummaryClosed(item, type);
               }
             } catch (error) {
               core.error(`❌ Error processing item: ${error.message}`);
-              summaryErrors.push(`- **${repo}**: ${error.message}`);
+              logSummaryError(repo, error);
             } finally {
               // Lock the archive back down safely
               try {
@@ -171,23 +173,12 @@ jobs:
               }
             }
 
-            // await core.summary
-            // .addRaw(`## Archived Repository Issue Cleanup Summary for ${repo}\n\n`, true)
-            // .addRaw(`**Execution Mode:** ${isDryRun ? 'Dry Run' : 'Actual Run'}\n\n`, true)
-            // .addRaw(`Target Owner context evaluated as: **${owner}**\n\n`, true)
-            // .addRaw(`### ${isDryRun ? 'PRs and Issues Identified for Closing' : 'Closed PRs and Issues'}\n\n`, true)
-            // .addRaw(summaryClosed.length > 0 ? summaryClosed.map(item => `- ${item}`).join('\n') : 'No open issues found in archived repositories.\n\n', true)
-            // .addRaw(`\n\n### Errors Encountered\n\n`, true)
-            // .addRaw(summaryErrors.length > 0 ? summaryErrors.map(err => `- ${err}`).join('\n') : 'None.', true)
-            // .write();
-
-            // Use summary .addRaw for regular text and .addHeading for section titles instead of using markdown headings
             await core.summary
-              .addHeading(`Archived Repository Issue Cleanup Summary for ${repo}`, 2)
+              .addHeading(`Archived Repository Issue Cleanup Summary for ${repo}`, 2).addRaw('', true)
               .addRaw(`**Execution Mode:** ${isDryRun ? 'Dry Run' : 'Actual Run'}\n\n`, true)
               .addRaw(`Target Owner context evaluated as: **${owner}**\n\n`, true)
-              .addHeading(`${isDryRun ? 'PRs and Issues Identified for Closing' : 'Closed PRs and Issues'}`, 3)
+              .addHeading(`${isDryRun ? 'PRs and Issues Identified for Closing' : 'Closed PRs and Issues'}`, 3).addRaw('', true)
               .addRaw(summaryClosed.length > 0 ? summaryClosed.map(item => `- ${item}`).join('\n') : 'No open issues found in archived repositories.\n\n', true)
-              .addHeading(`Errors Encountered`, 3)
+              .addHeading(`Errors Encountered`, 3).addRaw('', true)
               .addRaw(summaryErrors.length > 0 ? summaryErrors.map(err => `- ${err}`).join('\n') : 'None.', true)
               .write();
