@@ -97,11 +97,24 @@ jobs:
             const summaryClosed = [];
             const summaryErrors = [];
 
-            // Fetch all open issues and pull requests for the repository
-            const items = await github.paginate(github.rest.search.issuesAndPullRequests, {
-              q: `repo:${owner}/${repo} is:open`,
-              per_page: 100,
-            });
+            const query = [
+              `repo:${owner}/${repo}`,
+              `is:open`
+            ];
+
+            try {
+              // Fetch all open issues and pull requests for the repository
+              const items = await github.paginate(github.rest.search.issuesAndPullRequests, {
+                q: query.join(' '),
+                per_page: 100,
+              });
+            } catch (_) {
+              query.push('type:pr');
+              const items = await github.paginate(github.rest.search.issuesAndPullRequests, {
+                q: query.join(' '),
+                per_page: 100,
+              });
+            }
 
             const hasItems = items.length > 0;
 
