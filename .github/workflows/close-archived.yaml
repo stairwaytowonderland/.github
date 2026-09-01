@@ -86,7 +86,7 @@ jobs:
         env:
           DRY_RUN: ${{ inputs.dry-run }}
           REPO_NAME: ${{ matrix.name }}
-          ORG_NAME: ${{ matrix.orgName }}
+          ORG_NAME: ${{ matrix.org }}
         with:
           github-token: ${{ steps.auth-token.outputs.token }}
           script: |
