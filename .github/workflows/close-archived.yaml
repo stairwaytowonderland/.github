@@ -96,11 +96,24 @@ jobs:
 
             const summaryClosed = [];
             const summaryErrors = [];
-            const items = await github.paginate(github.rest.issues.listForRepo, {
-              owner,
-              repo,
-              state: 'open'
-            });
+
+            try {
+              const items = await github.paginate(github.rest.issues.listForRepo, {
+                owner,
+                repo,
+                state: 'open',
+                per_page: 100,
+              });
+            } catch (error) {
+              const items = await github.paginate(github.rest.pulls.list, {
+                owner,
+                repo,
+                state: 'open',
+                per_page: 100,
+              });
+            }
+
+            const hasItems = items.length > 0;
 
             core.info(`ℹ️ Found ${items.length} open items in ${repo}`);
 
