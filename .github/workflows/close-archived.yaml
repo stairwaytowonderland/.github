@@ -173,10 +173,10 @@ jobs:
 
             await core.summary
               .addHeading(`Archived Repository Issue Cleanup Summary for ${repo}`)
-              .addText(`**Execution Mode:** ${isDryRun ? 'Dry Run' : 'Actual Run'}`)
-              .addText(`Target Owner context evaluated as: **${owner}**`)
+              .addRaw(`**Execution Mode:** ${isDryRun ? 'Dry Run' : 'Actual Run'}`)
+              .addRaw(`Target Owner context evaluated as: **${owner}**`)
               .addHeading(isDryRun ? 'PRs and Issues Identified for Closing' : 'Closed PRs and Issues', 3)
-              .addText(summaryClosed.length > 0 ? summaryClosed.join('\n') : 'No open issues found in archived repositories.')
+              .addRaw(summaryClosed.length > 0 ? summaryClosed.join('\n') : 'No open issues found in archived repositories.')
               .addHeading('Errors Encountered', 3)
-              .addText(summaryErrors.length > 0 ? summaryErrors.join('\n') : 'None.')
+              .addRaw(summaryErrors.length > 0 ? summaryErrors.join('\n') : 'None.')
               .write();
