@@ -1,4 +1,4 @@
-name: 🗃️ Manage Dependencies PRs
+name: 🗄 Close Issues in Archived Repositories
 
 on:
   # schedule:
