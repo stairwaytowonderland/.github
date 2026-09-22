@@ -104,6 +104,21 @@ jobs:
         if: steps.check-if-node.outputs.setup-node == 'true'
         run: npm ci
 
+      - name: Copy Linter Rules
+        if: steps.check-if-node.outputs.setup-node == 'true'
+        env:
+          SUPERLINTER_RULES_PATH: ${{ inputs.superlinter-rules-path }}
+          GITHUB_LINTER_RULES_PATH: .github/linters
+        run: |
+          old_dir="${GITHUB_WORKSPACE%/}"
+          new_dir="${GITHUB_WORKSPACE%/}/${SUPERLINTER_RULES_PATH%/}/${GITHUB_LINTER_RULES_PATH%/}"
+          if [ ! -d "${new_dir}" ]; then
+            mkdir -p "${new_dir}"
+          fi
+          cp "${old_dir}/".prettier* "${new_dir}/"
+          echo "Copied linter rules from '${old_dir}' to '${new_dir}'"
+          ls -la "${new_dir}"
+
       - name: Lint Codebase
         id: super-linter
         uses: super-linter/super-linter/slim@v8
