@@ -20,6 +20,30 @@ on:
         description: 'The Node.js version file to use.'
         type: string
         default: '.node-version'
+      superlinter-filter-regex-exclude:
+        description: 'The regex pattern to exclude files from the super-linter.'
+        type: string
+        default: '(dist/.*|.*\.csv$)'
+      superlinter-rules-path:
+        description: 'The path to the super-linter rules.'
+        type: string
+        default: .
+      superlinter-validate-prettier:
+        description: 'Whether to validate TypeScript files with Prettier using the super-linter.'
+        type: boolean
+        default: true
+      superlinter-validate-editorconfig:
+        description: 'Whether to validate editorconfig files with the super-linter.'
+        type: boolean
+        default: false
+      superlinter-validate-checkov:
+        description: 'Whether to validate Checkov with the super-linter.'
+        type: boolean
+        default: false
+      superlinter-validate-natural-language:
+        description: 'Whether to validate natural language files with the super-linter.'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -53,13 +77,16 @@ jobs:
         id: super-linter
         uses: super-linter/super-linter/slim@v8
         env:
-          # CHECKOV_FILE_NAME: ${{ inputs.checkov-file-name }}
-          DEFAULT_BRANCH: main
-          # FILTER_REGEX_EXCLUDE: dist/**/*
-          FILTER_REGEX_EXCLUDE: '(dist/.*|.*\.csv$)'
+          CHECKOV_FILE_NAME: ${{ inputs.checkov-file-name }}
+          DEFAULT_BRANCH: ${{ github.repository.default_branch }}
+          FILTER_REGEX_EXCLUDE: ${{ inputs.superlinter-filter-regex-exclude }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          LINTER_RULES_PATH: .
-          VALIDATE_CHECKOV: false
+          LINTER_RULES_PATH: ${{ inputs.superlinter-rules-path }}
+          VALIDATE_PRETTIER: false
+          VALIDATE_TYPESCRIPT_PRETTIER: ${{ inputs.superlinter-validate-prettier }}
+          VALIDATE_EDITORCONFIG: ${{ inputs.superlinter-validate-editorconfig }}
+          VALIDATE_CHECKOV: ${{ inputs.superlinter-validate-checkov }}
+          VALIDATE_NATURAL_LANGUAGE: ${{ inputs.superlinter-validate-natural-language }}
           VALIDATE_ALL_CODEBASE: true
           VALIDATE_BIOME_FORMAT: false
           VALIDATE_BIOME_LINT: false
@@ -68,11 +95,9 @@ jobs:
           VALIDATE_JSCPD: false
           VALIDATE_TYPESCRIPT_ES: false
           VALIDATE_JSON: false
-          VALIDATE_NATURAL_LANGUAGE: false
-          # Bypasses the strict editorconfig line scanner:
-          VALIDATE_EDITORCONFIG: false
 
       - name: Run Checkov
         uses: bridgecrewio/checkov-action@v12
+        if: ! inputs.superlinter-validate-checkov
         with:
           config_file: ${{ inputs.checkov-file-name }}
