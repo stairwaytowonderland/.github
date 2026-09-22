@@ -77,12 +77,14 @@ jobs:
         id: super-linter
         uses: super-linter/super-linter/slim@v8
         env:
+          ENABLE_GITHUB_ACTIONS_STEP_SUMMARY: true # default: true
+          SAVE_SUPER_LINTER_SUMMARY: true # default: false
           CHECKOV_FILE_NAME: ${{ inputs.checkov-file-name }}
           DEFAULT_BRANCH: ${{ github.repository.default_branch }}
           FILTER_REGEX_EXCLUDE: ${{ inputs.superlinter-filter-regex-exclude }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINTER_RULES_PATH: ${{ inputs.superlinter-rules-path }}
-          VALIDATE_PRETTIER: false
+          # VALIDATE_PRETTIER: false
           VALIDATE_TYPESCRIPT_PRETTIER: ${{ inputs.superlinter-validate-prettier }}
           VALIDATE_EDITORCONFIG: ${{ inputs.superlinter-validate-editorconfig }}
           VALIDATE_CHECKOV: ${{ inputs.superlinter-validate-checkov }}

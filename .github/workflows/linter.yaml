@@ -28,10 +28,6 @@ on:
         description: 'The path to the super-linter rules.'
         type: string
         default: .
-      superlinter-validate-prettier:
-        description: 'Whether to validate TypeScript files with Prettier using the super-linter.'
-        type: boolean
-        default: true
       superlinter-validate-editorconfig:
         description: 'Whether to validate editorconfig files with the super-linter.'
         type: boolean
@@ -78,16 +74,54 @@ jobs:
             fi
           done
 
+      - name: Check if Node.js Version is Specified
+        id: check-if-node
+        env:
+          NODE_VERSION_FILE: ${{ inputs.node-version-file }}
+        run: |
+          if [ -f "$NODE_VERSION_FILE" ]; then
+            echo "Node.js version file found: $NODE_VERSION_FILE"
+            echo "setup-node=true" >> $GITHUB_OUTPUT
+          else
+            echo "Node.js version file not found: $NODE_VERSION_FILE"
+            echo "setup-node=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Custom Variables if using Node.js
+        if: steps.check-if-node.outputs.setup-node == 'true'
+        run: |
+          echo "VALIDATE_TYPESCRIPT_PRETTIER=${VALIDATE_TYPESCRIPT_PRETTIER:-true}" >> $GITHUB_ENV
+
+      - name: Custom Variables if not using Node.js
+        if: steps.check-if-node.outputs.setup-node != 'true'
+        run: |
+          echo "VALIDATE_PRETTIER=${VALIDATE_PRETTIER:-true}" >> $GITHUB_ENV
+
+      - name: Setup Node.js
+        id: setup-node
+        if: steps.check-if-node.outputs.setup-node == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: ${{ inputs.node-version-file }}
+          cache: ${{ inputs.node-cache-key }}
+
+      - name: Install Dependencies
+        id: install
+        if: steps.check-if-node.outputs.setup-node == 'true'
+        run: npm ci
+
       - name: Lint Codebase
         id: super-linter
         uses: super-linter/super-linter/slim@v8
         env:
+          ENABLE_GITHUB_ACTIONS_STEP_SUMMARY: true # default: true
+          SAVE_SUPER_LINTER_SUMMARY: true # default: false
           CHECKOV_FILE_NAME: ${{ inputs.checkov-file-name }}
           DEFAULT_BRANCH: ${{ github.repository.default_branch }}
           FILTER_REGEX_EXCLUDE: ${{ inputs.superlinter-filter-regex-exclude }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINTER_RULES_PATH: ${{ inputs.superlinter-rules-path }}
-          VALIDATE_PRETTIER: ${{ inputs.superlinter-validate-prettier }}
+          # VALIDATE_PRETTIER: ${{ inputs.superlinter-validate-prettier }}
           VALIDATE_EDITORCONFIG: ${{ inputs.superlinter-validate-editorconfig }}
           VALIDATE_CHECKOV: ${{ inputs.superlinter-validate-checkov }}
           VALIDATE_NATURAL_LANGUAGE: ${{ inputs.superlinter-validate-natural-language }}
