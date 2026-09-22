@@ -27,11 +27,7 @@ on:
       superlinter-rules-path:
         description: 'The path to the super-linter rules.'
         type: string
-        default: /
-      superlinter-prettier-config:
-        description: 'The path to the super-linter prettier config.'
-        type: string
-        default: '.prettierrc'
+        default: .
       superlinter-validate-prettier:
         description: 'Whether to validate TypeScript files with Prettier using the super-linter.'
         type: boolean
@@ -75,7 +71,6 @@ jobs:
           FILTER_REGEX_EXCLUDE: ${{ inputs.superlinter-filter-regex-exclude }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINTER_RULES_PATH: ${{ inputs.superlinter-rules-path }}
-          PRETTIER_CONFIG: ${{ inputs.superlinter-prettier-config }}
           VALIDATE_PRETTIER: ${{ inputs.superlinter-validate-prettier }}
           VALIDATE_EDITORCONFIG: ${{ inputs.superlinter-validate-editorconfig }}
           VALIDATE_CHECKOV: ${{ inputs.superlinter-validate-checkov }}
