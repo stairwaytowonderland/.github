@@ -27,9 +27,13 @@ on:
       superlinter-rules-path:
         description: 'The path to the super-linter rules.'
         type: string
-        default: .
+        default: /
       superlinter-validate-editorconfig:
         description: 'Whether to validate editorconfig files with the super-linter.'
+        type: boolean
+        default: true
+      superlinter-validate-prettier:
+        description: 'Whether to validate TypeScript files with Prettier using the super-linter.'
         type: boolean
         default: true
       superlinter-validate-checkov:
@@ -87,16 +91,6 @@ jobs:
             echo "setup-node=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Custom Variables if using Node.js
-        if: steps.check-if-node.outputs.setup-node == 'true'
-        run: |
-          echo "VALIDATE_TYPESCRIPT_PRETTIER=${VALIDATE_TYPESCRIPT_PRETTIER:-true}" >> $GITHUB_ENV
-
-      - name: Custom Variables if not using Node.js
-        if: steps.check-if-node.outputs.setup-node != 'true'
-        run: |
-          echo "VALIDATE_PRETTIER=${VALIDATE_PRETTIER:-true}" >> $GITHUB_ENV
-
       - name: Setup Node.js
         id: setup-node
         if: steps.check-if-node.outputs.setup-node == 'true'
@@ -121,7 +115,7 @@ jobs:
           FILTER_REGEX_EXCLUDE: ${{ inputs.superlinter-filter-regex-exclude }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINTER_RULES_PATH: ${{ inputs.superlinter-rules-path }}
-          # VALIDATE_PRETTIER: ${{ inputs.superlinter-validate-prettier }}
+          VALIDATE_PRETTIER: ${{ inputs.superlinter-validate-prettier }}
           VALIDATE_EDITORCONFIG: ${{ inputs.superlinter-validate-editorconfig }}
           VALIDATE_CHECKOV: ${{ inputs.superlinter-validate-checkov }}
           VALIDATE_NATURAL_LANGUAGE: ${{ inputs.superlinter-validate-natural-language }}
