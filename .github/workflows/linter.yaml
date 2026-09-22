@@ -71,7 +71,8 @@ jobs:
           FILTER_REGEX_EXCLUDE: ${{ inputs.superlinter-filter-regex-exclude }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LINTER_RULES_PATH: ${{ inputs.superlinter-rules-path }}
-          VALIDATE_PRETTIER: ${{ inputs.superlinter-validate-prettier }}
+          VALIDATE_PRETTIER: false
+          VALIDATE_TYPESCRIPT_PRETTIER: ${{ inputs.superlinter-validate-prettier }}
           VALIDATE_EDITORCONFIG: ${{ inputs.superlinter-validate-editorconfig }}
           VALIDATE_CHECKOV: ${{ inputs.superlinter-validate-checkov }}
           VALIDATE_NATURAL_LANGUAGE: ${{ inputs.superlinter-validate-natural-language }}
