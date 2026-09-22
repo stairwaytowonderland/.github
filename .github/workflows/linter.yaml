@@ -144,6 +144,17 @@ jobs:
           VALIDATE_TYPESCRIPT_ES: false
           VALIDATE_JSON: false
 
+          # Force Super-Linter to write out the raw Prettier error diff logs
+          CREATE_LOG_FILE: true
+
+      # This step will only execute if Super-Linter fails, printing the exact diff
+      - name: Print Super-Linter Prettier Diff
+        if: failure()
+        run: |
+          if [ -f "super-linter.log" ]; then
+            cat super-linter.log
+          fi
+
       - name: Run Checkov
         uses: bridgecrewio/checkov-action@v12
         if: ! inputs.superlinter-validate-checkov
