@@ -47,11 +47,11 @@ on:
       superlinter-copy-rules:
         description: 'Whether to copy super-linter rules.'
         type: boolean
-        default: true
+        default: false
       superlinter-log-file:
         description: 'The name of the log file for the super-linter. Set to an empty string to disable logging.'
         type: string
-        default: 'super-linter.log'
+        default: '' # super-linter.log
       additional-vars:
         required: false
         type: string
