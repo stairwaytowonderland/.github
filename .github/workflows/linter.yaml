@@ -44,6 +44,9 @@ on:
         description: 'Whether to validate natural language files with the super-linter.'
         type: boolean
         default: false
+      additional-vars:
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -61,6 +64,19 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+
+      - name: Export AdditionalEnvironment Variables
+        if: ${{ inputs.additional-vars != '' }}
+        env:
+          RAW_VARS: ${{ inputs.additional-vars }}
+        run: |
+          # Read line-by-line to preserve values with spaces or special signs safely
+          echo "$RAW_VARS" | while IFS= read -r line || [ -n "$line" ]; do
+            # Skip empty lines
+            if [ -n "$line" ]; then
+              echo "$line" >> $GITHUB_ENV
+            fi
+          done
 
       - name: Lint Codebase
         id: super-linter
