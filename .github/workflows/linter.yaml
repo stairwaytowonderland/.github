@@ -44,6 +44,14 @@ on:
         description: 'Whether to validate natural language files with the super-linter.'
         type: boolean
         default: false
+      superlinter-copy-rules:
+        description: 'Whether to copy super-linter rules.'
+        type: boolean
+        default: true
+      superlinter-log-file:
+        description: 'The name of the log file for the super-linter. Set to an empty string to disable logging.'
+        type: string
+        default: 'super-linter.log'
       additional-vars:
         required: false
         type: string
@@ -65,7 +73,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Export AdditionalEnvironment Variables
+      - name: Export Additional Environment Variables
         if: ${{ inputs.additional-vars != '' }}
         env:
           RAW_VARS: ${{ inputs.additional-vars }}
@@ -105,7 +113,7 @@ jobs:
         run: npm ci
 
       - name: Copy Linter Rules
-        if: steps.check-if-node.outputs.setup-node == 'true'
+        if: steps.check-if-node.outputs.setup-node == 'true' && inputs.superlinter-copy-rules == 'true'
         env:
           SUPERLINTER_RULES_PATH: ${{ inputs.superlinter-rules-path }}
           GITHUB_LINTER_RULES_PATH: .github/linters
@@ -145,16 +153,18 @@ jobs:
           VALIDATE_JSON: false
 
           # Force Super-Linter to write out the raw Prettier error diff logs
-          CREATE_LOG_FILE: true
-          # LOG_FILE: super-linter.log
+          CREATE_LOG_FILE: ${{ inputs.superlinter-log-file != '' }}
+          LOG_FILE: ${{ inputs.superlinter-log-file }}
 
       # This step will only execute if Super-Linter fails, printing the exact diff
-      - name: Print Super-Linter Prettier Diff
+      - name: Print Super-Linter Log
         if: failure()
+        env:
+          SUPERLINTER_LOG_FILE: ${{ inputs.superlinter-log-file }}
         run: |
-          if [ -f "super-linter.log" ]; then
-            sudo cat super-linter.log
-            sudo rm -v super-linter.log
+          if [ -f "${SUPERLINTER_LOG_FILE}" ]; then
+            sudo cat "${SUPERLINTER_LOG_FILE}"
+            sudo rm -v "${SUPERLINTER_LOG_FILE}"
           fi
 
       - name: Run Checkov
