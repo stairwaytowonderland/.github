@@ -146,13 +146,15 @@ jobs:
 
           # Force Super-Linter to write out the raw Prettier error diff logs
           CREATE_LOG_FILE: true
+          # LOG_FILE: super-linter.log
 
       # This step will only execute if Super-Linter fails, printing the exact diff
       - name: Print Super-Linter Prettier Diff
         if: failure()
         run: |
           if [ -f "super-linter.log" ]; then
-            cat super-linter.log
+            sudo cat super-linter.log
+            sudo rm -v super-linter.log
           fi
 
       - name: Run Checkov
