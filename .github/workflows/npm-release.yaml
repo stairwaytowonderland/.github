@@ -1,4 +1,4 @@
-name: 🔄 CI - Release
+name: 🔄 NPM Release
 
 on:
   workflow_call:
