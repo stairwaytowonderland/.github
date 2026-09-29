@@ -100,16 +100,10 @@ jobs:
           notes-b64: ${{ inputs.notes-b64 }}
           tag: ${{ steps.vars.outputs.tag }}
 
-      - name: Checkout release tag
-        uses: actions/checkout@v7
-        with:
-          ref: ${{ steps.vars.outputs.tag }}
-          fetch-depth: 0
-          persist-credentials: false
-          token: ${{ steps.auth-token.outputs.token }}
-
-      - name: Normalize Major Version Tag
-        if: inputs.normalize-majorver && steps.publish.outputs.release-published
-        uses: ./.github/workflows/normalize-majorver.yaml
-        with:
-          github-token: ${{ steps.auth-token.outputs.token }}
+  normalize-majorver:
+    name: Normalize Major Version Tag
+    if: (needs.publish.outputs.release-published == 'true' && github.repository == 'stairwaytowonderland/.github') || inputs.normalize-majorver == true
+    needs: [publish]
+    uses: ./.github/workflows/normalize-majorver.yaml
+    permissions:
+      contents: write
