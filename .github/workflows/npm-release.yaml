@@ -1,0 +1,69 @@
+name: NPM Release
+
+on:
+  workflow_call:
+    inputs:
+      fail-on-no-release:
+        description: 'Fail the workflow if no release is published (e.g. if there are no relevant commits).'
+        type: boolean
+      first-release-dispatch-workflow:
+        description: 'The workflow file to dispatch after a successful release.'
+        type: string
+    secrets:
+      github-token:
+        description: 'GitHub Personal Access Token with repo scope for creating releases.'
+    outputs:
+      new-release-published:
+        description: 'Whether a new release was published.'
+        value: ${{ jobs.release.outputs.new-release-published }}
+      new-release-version:
+        description: 'The version of the new release.'
+        value: ${{ jobs.release.outputs.new-release-version }}
+      new-release-git-tag:
+        description: 'The git tag of the new release.'
+        value: ${{ jobs.release.outputs.new-release-git-tag }}
+      new-release-notes:
+        description: 'The release notes of the new release.'
+        value: ${{ jobs.release.outputs.new-release-notes }}
+      new-release-notes-base64:
+        description: 'The base64-encoded release notes of the new release.'
+        value: ${{ jobs.release.outputs.new-release-notes-base64 }}
+
+permissions:
+  actions: write
+  contents: write
+  issues: write
+  pull-requests: write
+
+# Use PAT instead of GITHUB_TOKEN to cause semantic-release to trigger tag pipeline when tag is created.
+# 'Fine-grained token' repo permissions: Contents
+
+jobs:
+  meta:
+    name: Meta
+    uses: ./.github/workflows/ci-meta.yaml
+    permissions:
+      contents: read
+
+  check-dist:
+    name: 🏗️ Check Transpiled JavaScript
+    needs: [meta]
+    if: needs.meta.outputs.is-release-workflow == 'true' && (github.event_name != 'push' || ! startsWith(github.ref, 'refs/tags/'))
+    uses: ./.github/workflows/npm-check-dist.yaml
+    with:
+      build-command: |
+        npm run build:compile
+        npm run build:package
+
+    permissions:
+      contents: read
+
+  release:
+    name: Release
+    needs: [meta, check-dist]
+    if: needs.meta.outputs.is-release-workflow == 'true'
+    uses: ./.github/workflows/release.yaml
+    secrets: inherit
+    with:
+      dispatch-workflow: ${{ needs.meta.outputs.has-release-tags != 'true' && inputs.first-release-dispatch-workflow || '' }}
+      fail-on-no-release: ${{ inputs.fail-on-no-release == true }}
