@@ -178,11 +178,12 @@ jobs:
       # action-ref: ${{ inputs.action-ref }}
       tag: ${{ inputs.tag || github.ref_name }}
       notes-b64: ${{ inputs.notes-b64 }}
+      normalize-majorver: ${{ github.repository == 'stairwaytowonderland/.github' || inputs.normalize-majorver == true }}
 
-  normalize-majorver:
-    name: Normalize Major Version Tag
-    if: (needs.publish.outputs.release-published == 'true' && github.repository == 'stairwaytowonderland/.github') || inputs.normalize-majorver == true
-    needs: [publish]
-    uses: ./.github/workflows/normalize-majorver.yaml
-    permissions:
-      contents: write
+  # normalize-majorver:
+  #   name: Normalize Major Version Tag
+  #   if: (needs.publish.outputs.release-published == 'true' && github.repository == 'stairwaytowonderland/.github') || inputs.normalize-majorver == true
+  #   needs: [publish]
+  #   uses: ./.github/workflows/normalize-majorver.yaml
+  #   permissions:
+  #     contents: write
