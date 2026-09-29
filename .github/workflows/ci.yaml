@@ -121,8 +121,8 @@ permissions:
   pull-requests: write
 
 jobs:
-  meta:
-    name: Meta
+  info:
+    name: Gather Info
     uses: ./.github/workflows/ci-meta.yaml
     permissions:
       contents: read
@@ -132,19 +132,19 @@ jobs:
 
   release:
     name: Release
-    needs: [meta]
-    if: needs.meta.outputs.is-release-workflow == 'true'
+    needs: [info]
+    if: needs.info.outputs.is-release-workflow == 'true'
     uses: ./.github/workflows/release.yaml
     secrets: inherit
     with:
       # action-ref: ${{ inputs.action-ref }}
-      dispatch-workflow: ${{ needs.meta.outputs.has-release-tags != 'true' && inputs.first-release-dispatch-workflow || '' }}
+      dispatch-workflow: ${{ needs.info.outputs.has-release-tags != 'true' && inputs.first-release-dispatch-workflow || '' }}
       fail-on-no-release: ${{ inputs.fail-on-no-release == true }}
 
   # publish-debug:
   #   name: Publish Debug Info
-  #   needs: [meta]
-  #   if: needs.meta.outputs.is-publish-workflow == 'true'
+  #   needs: [info]
+  #   if: needs.info.outputs.is-publish-workflow == 'true'
   #   runs-on: ubuntu-latest
   #   steps:
   #     - name: Debug Info
@@ -155,21 +155,21 @@ jobs:
   #         echo "  action-ref: ${{ inputs.action-ref }}"
   #         echo "  first-release-dispatch-workflow: ${{ inputs.first-release-dispatch-workflow }}"
   #         echo "Meta Outputs:"
-  #         echo "  is-release-workflow: ${{ needs.meta.outputs.is-release-workflow }}"
-  #         echo "  is-publish-workflow: ${{ needs.meta.outputs.is-publish-workflow }}"
-  #         echo "  has-release-tags: ${{ needs.meta.outputs.has-release-tags }}"
+  #         echo "  is-release-workflow: ${{ needs.info.outputs.is-release-workflow }}"
+  #         echo "  is-publish-workflow: ${{ needs.info.outputs.is-publish-workflow }}"
+  #         echo "  has-release-tags: ${{ needs.info.outputs.has-release-tags }}"
   #         echo "Conditions:"
-  #         echo "  publish-test-01: ${{ needs.meta.outputs.is-publish-workflow == 'true' && (inputs.first-release-dispatch-workflow != '' && needs.meta.outputs.has-release-tags == 'true' || inputs.first-release-dispatch-workflow != '') }}"
-  #         echo "  publish-test-02: ${{ needs.meta.outputs.is-publish-workflow == 'true' && ! (needs.meta.outputs.has-release-tags != 'true' && inputs.first-release-dispatch-workflow != '') }}"
-  #         echo "  publish-test-03: ${{ needs.meta.outputs.is-publish-workflow == 'true' || (needs.meta.outputs.has-release-tags != 'true' && inputs.first-release-dispatch-workflow != '') }}"
+  #         echo "  publish-test-01: ${{ needs.info.outputs.is-publish-workflow == 'true' && (inputs.first-release-dispatch-workflow != '' && needs.info.outputs.has-release-tags == 'true' || inputs.first-release-dispatch-workflow != '') }}"
+  #         echo "  publish-test-02: ${{ needs.info.outputs.is-publish-workflow == 'true' && ! (needs.info.outputs.has-release-tags != 'true' && inputs.first-release-dispatch-workflow != '') }}"
+  #         echo "  publish-test-03: ${{ needs.info.outputs.is-publish-workflow == 'true' || (needs.info.outputs.has-release-tags != 'true' && inputs.first-release-dispatch-workflow != '') }}"
 
   publish:
     name: Publish
-    needs: [meta]
-    # if: needs.meta.outputs.is-publish-workflow == 'true' && (inputs.first-release-dispatch-workflow != '' && needs.meta.outputs.has-release-tags == 'true' || inputs.first-release-dispatch-workflow != '')
-    # if: needs.meta.outputs.is-publish-workflow == 'true' && ! (needs.meta.outputs.has-release-tags != 'true' && inputs.first-release-dispatch-workflow != '')
-    # if: needs.meta.outputs.is-publish-workflow == 'true' || (needs.meta.outputs.has-release-tags != 'true' && inputs.first-release-dispatch-workflow != '')
-    if: needs.meta.outputs.is-publish-workflow == 'true'
+    needs: [info]
+    # if: needs.info.outputs.is-publish-workflow == 'true' && (inputs.first-release-dispatch-workflow != '' && needs.info.outputs.has-release-tags == 'true' || inputs.first-release-dispatch-workflow != '')
+    # if: needs.info.outputs.is-publish-workflow == 'true' && ! (needs.info.outputs.has-release-tags != 'true' && inputs.first-release-dispatch-workflow != '')
+    # if: needs.info.outputs.is-publish-workflow == 'true' || (needs.info.outputs.has-release-tags != 'true' && inputs.first-release-dispatch-workflow != '')
+    if: needs.info.outputs.is-publish-workflow == 'true'
     uses: ./.github/workflows/publish.yaml
     permissions:
       contents: write
