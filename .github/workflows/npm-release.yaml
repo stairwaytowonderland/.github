@@ -1,4 +1,4 @@
-name: 🔄 NPM Release
+name: NPM Release
 
 on:
   workflow_call:
@@ -28,10 +28,6 @@ on:
       new-release-notes-base64:
         description: 'The base64-encoded release notes of the new release.'
         value: ${{ jobs.release.outputs.new-release-notes-base64 }}
-
-concurrency:
-  group: '${{ github.repository_id }}-${{ github.ref_name }}'
-  cancel-in-progress: ${{ github.event_name == 'push' }}
 
 permissions:
   actions: write
