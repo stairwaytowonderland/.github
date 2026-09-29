@@ -103,3 +103,5 @@ jobs:
       - name: Normalize Major Version Tag
         if: inputs.normalize-majorver && steps.publish.outputs.release-published
         uses: ./.github/workflows/normalize-majorver.yaml
+        with:
+          github-token: ${{ steps.auth-token.outputs.token }}
