@@ -6,6 +6,33 @@ The [**stairwaytowonderland**](https://github.com/stairwaytowonderland) org publ
 >
 > See org [owner](https://github.com/andrewhaller) profile, [gists](https://gist.github.com/andrewhaller) and [lists](https://github.com/andrewhaller?tab=stars).
 
+## :octopus: Marketplace Actions
+
+**GitHub search:** [`org:stairwaytowonderland topic:github-action topic:marketplace`](https://github.com/search?q=org%3Astairwaytowonderland+topic%3Agithub-action+topic%3Amarketplace&type=repositories&s=name&o=asc)
+
+### [add-to-project](https://github.com/stairwaytowonderland/add-to-project)
+
+> :shopping_cart: Marketplace Action | Adds the specified repo or owner issues or pull requests to a GitHub project.
+
+### [node-semantic-release](https://github.com/stairwaytowonderland/node-semantic-release)
+
+> :shopping_cart: Marketplace Action | Builds the project with npm, runs semantic-release, and base64-encodes
+> the release notes for safe transport.
+
+### [normalize-majorver](https://github.com/stairwaytowonderland/normalize-majorver)
+
+> :shopping_cart: Marketplace Action | This GitHub Action creates and updates normalized major version tags
+> (e.g. v1, v2) when a semantic versioning tag is pushed.
+
+### [repository-create](https://github.com/stairwaytowonderland/repository-create)
+
+> :shopping_cart: Marketplace Action | Creates a GitHub organization repository with overrideable pre-defined settings
+> and branch rulesets.
+
+### [simple-workflow-dispatch](https://github.com/stairwaytowonderland/simple-workflow-dispatch)
+
+> :shopping_cart: Marketplace Action | Trigger a workflow_dispatch event on a target workflow file.
+
 ## :card_file_box: Repository Creation & Management
 
 ### [create-repository](https://github.com/stairwaytowonderland/create-repository/actions/workflows/create-repository.yaml)
@@ -38,27 +65,6 @@ The [**stairwaytowonderland**](https://github.com/stairwaytowonderland) org publ
 
 > :arrows_counterclockwise: Reusable workflows to release a Python app using semantic versioning, create a wheel
 > package artifact, and publish a release.
-
-## :octopus: Marketplace Actions
-
-### [node-semantic-release](https://github.com/stairwaytowonderland/node-semantic-release)
-
-> :shopping_cart: Marketplace Action | Builds the project with npm, runs semantic-release, and base64-encodes
-> the release notes for safe transport.
-
-### [repository-create](https://github.com/stairwaytowonderland/repository-create)
-
-> :shopping_cart: Marketplace Action | Creates a GitHub organization repository with overrideable pre-defined settings
-> and branch rulesets.
-
-### [simple-workflow-dispatch](https://github.com/stairwaytowonderland/simple-workflow-dispatch)
-
-> :shopping_cart: Marketplace Action | Trigger a workflow_dispatch event on a target workflow file.
-
-### [normalize-majorver](https://github.com/stairwaytowonderland/normalize-majorver)
-
-> :shopping_cart: Marketplace Action | This GitHub Action creates and updates normalized major version tags
-> (e.g. v1, v2) when a semantic versioning tag is pushed.
 
 ## :fire: Cloudflare
 

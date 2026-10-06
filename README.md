@@ -28,14 +28,20 @@ Public organization info.
 │   │   ├── 04_task.yml
 │   │   └── config.yml
 │   ├── workflows/
+│   │   ├── add-to-project.yaml
 │   │   ├── ci-meta.yaml
 │   │   ├── ci-package-update.yaml
 │   │   ├── ci.yaml
+│   │   ├── close-archived.yaml
 │   │   ├── conventional-commit.yaml
+│   │   ├── create-labels.yaml
+│   │   ├── docker-aws-ecr.yaml
 │   │   ├── licensed.yaml
 │   │   ├── linter-nodejs.yaml
 │   │   ├── linter.yaml
 │   │   ├── normalize-majorver.yaml
+│   │   ├── npm-check-dist.yaml
+│   │   ├── npm-release.yaml
 │   │   ├── pre-commit.yaml
 │   │   ├── publish.yaml
 │   │   ├── release.yaml
