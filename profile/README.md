@@ -10,6 +10,8 @@ The [**stairwaytowonderland**](https://github.com/stairwaytowonderland) org publ
 
 **GitHub search:** [`org:stairwaytowonderland topic:github-action topic:marketplace`](https://github.com/search?q=org%3Astairwaytowonderland+topic%3Agithub-action+topic%3Amarketplace&type=repositories&s=name&o=asc)
 
+**Personal list:** [My Marketplace Actions](https://github.com/stars/andrewhaller/lists/my-marketplace-actions)
+
 ### [add-to-project](https://github.com/stairwaytowonderland/add-to-project)
 
 > :shopping_cart: Marketplace Action | Adds the specified repo or owner issues or pull requests to a GitHub project.
