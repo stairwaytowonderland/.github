@@ -130,7 +130,7 @@ jobs:
 
       - name: Dispatch Publish workflow
         if: steps.release.outputs.new-release-published == 'true' && inputs.dispatch-workflow != ''
-        uses: stairwaytowonderland/simple-workflow-dispatch@v1.3.0
+        uses: stairwaytowonderland/simple-workflow-dispatch@v1.8.0
         with:
           workflow: ${{ inputs.dispatch-workflow }}
           tag: ${{ steps.release.outputs.new-release-git-tag }}

@@ -75,7 +75,7 @@ jobs:
 
       - name: Lint Codebase
         id: super-linter
-        uses: super-linter/super-linter/slim@v8
+        uses: super-linter/super-linter/slim@v9
         env:
           ENABLE_GITHUB_ACTIONS_STEP_SUMMARY: true # default: true
           SAVE_SUPER_LINTER_SUMMARY: true # default: false
