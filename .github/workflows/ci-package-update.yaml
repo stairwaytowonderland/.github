@@ -23,6 +23,14 @@ on:
       github-token:
         description: 'GitHub Personal Access Token with repo scope for checking commits.'
 
+    outputs:
+      will-update:
+        description: 'Indicates whether package update would be triggered'
+        value: ${{ jobs.setup.outputs.trigger-update == 'true' }}
+      has-updated:
+        description: 'Indicates whether any of the specified paths have been updated.'
+        value: ${{ jobs.package-update.outputs.has-updated == 'true' }}
+
 concurrency:
   group: ${{ github.event_name != 'push' && format('{0}-{1}', github.repository_id, github.ref_name || github.run_id) }}
   cancel-in-progress: ${{ github.event_name != 'push' }}
@@ -76,6 +84,8 @@ jobs:
     needs: [setup]
     if: needs.setup.outputs.trigger-update == 'true'
     runs-on: ubuntu-latest
+    outputs:
+      has-updated: ${{ steps.update-success.outputs.updated == 'true' }}
 
     steps:
       - name: Dispatch Publish workflow
@@ -83,3 +93,13 @@ jobs:
         uses: stairwaytowonderland/simple-workflow-dispatch@main
         with:
           workflow: ci.yaml
+
+      - name: Set updated output
+        id: update-success
+        if: success()
+        run: echo "updated=true" >> $GITHUB_OUTPUT
+
+      - name: Set updated output
+        id: update-fail
+        if: failure()
+        run: echo "updated=false" >> $GITHUB_OUTPUT
