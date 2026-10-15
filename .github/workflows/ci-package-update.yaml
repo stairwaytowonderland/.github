@@ -29,16 +29,13 @@ on:
         description: 'GitHub Personal Access Token with repo scope for checking commits.'
 
     outputs:
-      will-update:
+      trigger-update:
         description: 'Indicates whether package update would be triggered'
         value: ${{ jobs.setup.outputs.trigger-update == 'true' }}
-      has-updated:
-        description: 'Indicates whether any of the specified paths have been updated.'
-        value: ${{ jobs.package-update.outputs.has-updated == 'true' }}
 
-concurrency:
-  group: ${{ github.event_name != 'push' && format('{0}-{1}', github.repository_id, github.ref_name || github.run_id) }}
-  cancel-in-progress: ${{ github.event_name != 'push' }}
+# concurrency:
+#   group: ${{ github.event_name != 'push' && format('{0}-{1}', github.repository_id, github.ref_name || github.run_id) }}
+#   cancel-in-progress: ${{ github.event_name != 'push' }}
 
 permissions:
   actions: write
@@ -52,6 +49,7 @@ permissions:
 jobs:
   setup:
     name: Setup
+    if: github.event_name == 'push' && ! startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     outputs:
       trigger-update: ${{ steps.has-paths.outputs.trigger-update == 'true' }}
@@ -75,7 +73,7 @@ jobs:
       #     sparse-checkout: |
       #       .github/actions
 
-      - name: Check for changed files
+      - name: 📂 Check for changed files
         id: has-paths
         # uses: ./.actions/.github/actions/changed-files-action
         uses: stairwaytowonderland/actions/.github/actions/changed-files-action@v1
@@ -84,13 +82,24 @@ jobs:
           ignore-authors: ${{ inputs.ignore-authors }}
           ignore-events: ${{ inputs.ignore-events }}
 
+      - name: Show outputs
+        env:
+          OUTPUTS_JSON: ${{ toJson(steps.has-paths.outputs) }}
+        run: |
+          echo "$OUTPUTS_JSON"
+          # echo "Changed files: ${{ steps.has-paths.outputs.changed-files }}"
+          # echo "Filtered files: ${{ steps.has-paths.outputs.changed-files-filtered }}"
+          # echo "Trigger update: ${{ steps.has-paths.outputs.trigger-update }}"
+          # echo "Outputs JSON:"
+          # cat << 'EOF'
+          # ${{ toJson(steps.has-paths.outputs) }}
+          # EOF
+
   package-update:
     name: Update packages
     needs: [setup]
     if: needs.setup.outputs.trigger-update == 'true'
     runs-on: ubuntu-latest
-    outputs:
-      has-updated: ${{ steps.update-success.outputs.updated == 'true' }}
 
     steps:
       - name: Dispatch Publish workflow
@@ -98,13 +107,3 @@ jobs:
         uses: stairwaytowonderland/simple-workflow-dispatch@main
         with:
           workflow: ci.yaml
-
-      - name: Set updated output
-        id: update-success
-        if: success()
-        run: echo "updated=true" >> $GITHUB_OUTPUT
-
-      - name: Set updated output
-        id: update-fail
-        if: failure()
-        run: echo "updated=false" >> $GITHUB_OUTPUT
