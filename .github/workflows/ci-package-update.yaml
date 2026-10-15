@@ -85,15 +85,14 @@ jobs:
       - name: Show outputs
         env:
           OUTPUTS_JSON: ${{ toJson(steps.has-paths.outputs) }}
+        # run: |
+        #   # echo "Outputs JSON:"
+        #   cat << 'EOF'
+        #   ${{ toJson(steps.has-paths.outputs) }}
+        #   EOF
         run: |
+          echo "Outputs JSON:"
           echo "$OUTPUTS_JSON"
-          # echo "Changed files: ${{ steps.has-paths.outputs.changed-files }}"
-          # echo "Filtered files: ${{ steps.has-paths.outputs.changed-files-filtered }}"
-          # echo "Trigger update: ${{ steps.has-paths.outputs.trigger-update }}"
-          # echo "Outputs JSON:"
-          # cat << 'EOF'
-          # ${{ toJson(steps.has-paths.outputs) }}
-          # EOF
 
   package-update:
     name: Update packages
