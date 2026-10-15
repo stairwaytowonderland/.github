@@ -15,6 +15,11 @@ on:
         default: |
           github-actions[bot]
           semantic-release-bot
+      ignore-events:
+        description: 'A newline delimited list of GitHub events to ignore when checking for changes (e.g. push).'
+        type: string
+        default: |
+          push
       # action-ref:
       #   description: 'Git ref of the shared actions repo to use (e.g. main or a specific tag/commit)'
       #   type: string
@@ -77,7 +82,7 @@ jobs:
         with:
           paths: ${{ inputs.paths }}
           ignore-authors: ${{ inputs.ignore-authors }}
-          ignore-events: push
+          ignore-events: ${{ inputs.ignore-events }}
 
   package-update:
     name: Update packages
