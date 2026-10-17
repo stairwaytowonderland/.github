@@ -21,10 +21,6 @@ on:
         # default: |
         #   push
 
-    secrets:
-      github-token:
-        description: 'GitHub Personal Access Token with repo scope for checking commits.'
-
     outputs:
       trigger-update:
         description: 'Indicates whether package update would be triggered'
