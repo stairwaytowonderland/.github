@@ -22,9 +22,9 @@ on:
         #   push
 
     outputs:
-      trigger-update:
+      result:
         description: 'Indicates whether package update would be triggered'
-        value: ${{ jobs.check-changed.outputs.trigger-update == 'true' }}
+        value: ${{ jobs.check-changed.outputs.result == 'true' }}
 
 permissions:
   contents: read
@@ -35,7 +35,7 @@ jobs:
     if: github.event_name == 'push' && ! startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     outputs:
-      trigger-update: ${{ steps.changed-files.outputs.trigger-update == 'true' }}
+      result: ${{ steps.changed-files.outputs.result == 'true' }}
 
     steps:
       - name: Checkout code
