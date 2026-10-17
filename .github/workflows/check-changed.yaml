@@ -20,13 +20,6 @@ on:
         type: string
         # default: |
         #   push
-      # action-ref:
-      #   description: 'Git ref of the shared actions repo to use (e.g. main or a specific tag/commit)'
-      #   type: string
-      #   default: ''
-    secrets:
-      github-token:
-        description: 'GitHub Personal Access Token with repo scope for checking commits.'
 
     outputs:
       trigger-update:
@@ -39,9 +32,6 @@ concurrency:
 
 permissions:
   contents: read
-
-# Use PAT instead of GITHUB_TOKEN to cause semantic-release to trigger tag pipeline when tag is created.
-# 'Fine-grained token' repo permissions: Contents
 
 jobs:
   check-changed:
@@ -59,20 +49,8 @@ jobs:
           fetch-depth: 2
           persist-credentials: false
 
-      # - name: Checkout shared actions repo
-      #   if: inputs.action-ref != ''
-      #   uses: actions/checkout@v7
-      #   with:
-      #     repository: stairwaytowonderland/actions
-      #     path: ./.actions
-      #     ref: ${{ inputs.action-ref }}
-      #     persist-credentials: false
-      #     sparse-checkout: |
-      #       .github/actions
-
       - name: Check for changed files
         id: changed-files
-        # uses: ./.actions/.github/actions/changed-files-action
         uses: stairwaytowonderland/actions/.github/actions/changed-files-action@v1
         with:
           paths: ${{ inputs.paths }}
