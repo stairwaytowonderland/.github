@@ -31,7 +31,7 @@ on:
     outputs:
       trigger-update:
         description: 'Indicates whether package update would be triggered'
-        value: ${{ jobs.setup.outputs.trigger-update == 'true' }}
+        value: ${{ jobs.check-changed.outputs.trigger-update == 'true' }}
 
 concurrency:
   group: ${{ github.event_name != 'push' && format('{0}-{1}', github.repository_id, github.ref_name || github.run_id) }}
@@ -47,57 +47,19 @@ permissions:
 # 'Fine-grained token' repo permissions: Contents
 
 jobs:
-  setup:
-    name: Setup
+  check-changed:
+    name: Check Changed Files
     if: github.event_name == 'push' && ! startsWith(github.ref, 'refs/tags/')
-    runs-on: ubuntu-latest
-    outputs:
-      trigger-update: ${{ steps.has-paths.outputs.trigger-update == 'true' }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-        with:
-          sparse-checkout: ${{ inputs.paths }}
-          fetch-depth: 2
-          persist-credentials: false
-
-      # - name: Checkout shared actions repo
-      #   if: inputs.action-ref != ''
-      #   uses: actions/checkout@v7
-      #   with:
-      #     repository: stairwaytowonderland/actions
-      #     path: ./.actions
-      #     ref: ${{ inputs.action-ref }}
-      #     persist-credentials: false
-      #     sparse-checkout: |
-      #       .github/actions
-
-      - name: 📂 Check for changed files
-        id: has-paths
-        # uses: ./.actions/.github/actions/changed-files-action
-        uses: stairwaytowonderland/actions/.github/actions/changed-files-action@v1
-        with:
-          paths: ${{ inputs.paths }}
-          ignore-authors: ${{ inputs.ignore-authors }}
-          ignore-events: ${{ inputs.ignore-events }}
-
-      - name: Show outputs
-        env:
-          OUTPUTS_JSON: ${{ toJson(steps.has-paths.outputs) }}
-        # run: |
-        #   # echo "Outputs JSON:"
-        #   cat << 'EOF'
-        #   ${{ toJson(steps.has-paths.outputs) }}
-        #   EOF
-        run: |
-          echo "Outputs JSON:"
-          echo "$OUTPUTS_JSON"
+    uses: ./.github/workflows/check-changed.yaml
+    with:
+      paths: ${{ inputs.paths }}
+      ignore-authors: ${{ inputs.ignore-authors }}
+      ignore-events: ${{ inputs.ignore-events }}
 
   package-update:
     name: Update packages
-    needs: [setup]
-    if: needs.setup.outputs.trigger-update == 'true'
+    needs: [check-changed]
+    if: needs.check-changed.outputs.trigger-update == 'true'
     runs-on: ubuntu-latest
 
     steps:

@@ -1,0 +1,92 @@
+name: Check Changed Files
+
+on:
+  workflow_call:
+    inputs:
+      paths:
+        description: 'A newline delimited list of file paths to check for changes (e.g. package.json and package-lock.json).'
+        type: string
+        # default: |
+        #   package.json
+        #   package-lock.json
+      ignore-authors:
+        description: 'A newline delimited list of commit authors to ignore when checking for changes (e.g. semantic-release-bot and github-actions[bot]).'
+        type: string
+        # default: |
+        #   github-actions[bot]
+        #   semantic-release-bot
+      ignore-events:
+        description: 'A newline delimited list of GitHub events to ignore when checking for changes (e.g. push).'
+        type: string
+        # default: |
+        #   push
+      # action-ref:
+      #   description: 'Git ref of the shared actions repo to use (e.g. main or a specific tag/commit)'
+      #   type: string
+      #   default: ''
+    secrets:
+      github-token:
+        description: 'GitHub Personal Access Token with repo scope for checking commits.'
+
+    outputs:
+      trigger-update:
+        description: 'Indicates whether package update would be triggered'
+        value: ${{ jobs.check-changed.outputs.trigger-update == 'true' }}
+
+concurrency:
+  group: ${{ github.event_name != 'push' && format('{0}-{1}', github.repository_id, github.ref_name || github.run_id) }}
+  cancel-in-progress: ${{ github.event_name != 'push' }}
+
+permissions:
+  contents: read
+
+# Use PAT instead of GITHUB_TOKEN to cause semantic-release to trigger tag pipeline when tag is created.
+# 'Fine-grained token' repo permissions: Contents
+
+jobs:
+  check-changed:
+    name: 📂 Check Changed Files
+    if: github.event_name == 'push' && ! startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    outputs:
+      trigger-update: ${{ steps.changed-files.outputs.trigger-update == 'true' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: ${{ inputs.paths }}
+          fetch-depth: 2
+          persist-credentials: false
+
+      # - name: Checkout shared actions repo
+      #   if: inputs.action-ref != ''
+      #   uses: actions/checkout@v7
+      #   with:
+      #     repository: stairwaytowonderland/actions
+      #     path: ./.actions
+      #     ref: ${{ inputs.action-ref }}
+      #     persist-credentials: false
+      #     sparse-checkout: |
+      #       .github/actions
+
+      - name: Check for changed files
+        id: changed-files
+        # uses: ./.actions/.github/actions/changed-files-action
+        uses: stairwaytowonderland/actions/.github/actions/changed-files-action@v1
+        with:
+          paths: ${{ inputs.paths }}
+          ignore-authors: ${{ inputs.ignore-authors }}
+          ignore-events: ${{ inputs.ignore-events }}
+
+      - name: Show outputs
+        env:
+          OUTPUTS_JSON: ${{ toJson(steps.changed-files.outputs) }}
+        # run: |
+        #   # echo "Outputs JSON:"
+        #   cat << 'EOF'
+        #   ${{ toJson(steps.changed-files.outputs) }}
+        #   EOF
+        run: |
+          echo "Outputs JSON:"
+          echo "$OUTPUTS_JSON"
