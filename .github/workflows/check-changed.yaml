@@ -46,7 +46,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           sparse-checkout: ${{ inputs.paths }}
-          sparse-checkout-cone-mode: true
+          sparse-checkout-cone-mode: false
           fetch-depth: 2
           persist-credentials: false
 
