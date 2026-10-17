@@ -28,10 +28,10 @@ on:
       github-token:
         description: 'GitHub Personal Access Token with repo scope for checking commits.'
 
-    outputs:
-      trigger-update:
-        description: 'Indicates whether package update would be triggered'
-        value: ${{ jobs.check-changed.outputs.trigger-update == 'true' }}
+    # outputs:
+    #   trigger-update:
+    #     description: 'Indicates whether package update would be triggered'
+    #     value: ${{ jobs.check-changed.outputs.result == 'true' }}
 
 concurrency:
   group: ${{ github.event_name != 'push' && format('{0}-{1}', github.repository_id, github.ref_name || github.run_id) }}
@@ -59,7 +59,7 @@ jobs:
   package-update:
     name: Update packages
     needs: [check-changed]
-    if: needs.check-changed.outputs.trigger-update == 'true'
+    if: needs.check-changed.outputs.result == 'true'
     runs-on: ubuntu-latest
 
     steps:

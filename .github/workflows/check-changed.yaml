@@ -53,7 +53,7 @@ jobs:
           paths: ${{ inputs.paths }}
           ignore-authors: ${{ inputs.ignore-authors }}
           ignore-events: ${{ inputs.ignore-events }}
-          show-summary: 'true'
+          show-summary: true
 
       - name: Show outputs
         env:
