@@ -30,10 +30,7 @@ on:
         value: ${{ jobs.release.outputs.new-release-notes-base64 }}
 
 permissions:
-  actions: write
-  contents: write
-  issues: write
-  pull-requests: write
+  contents: read
 
 # Use PAT instead of GITHUB_TOKEN to cause semantic-release to trigger tag pipeline when tag is created.
 # 'Fine-grained token' repo permissions: Contents
@@ -63,7 +60,12 @@ jobs:
     needs: [meta, check-dist]
     if: needs.meta.outputs.is-release-workflow == 'true'
     uses: ./.github/workflows/release.yaml
-    secrets: inherit
+    permissions:
+      actions: write
+      contents: write
+      issues: write
+      pull-requests: write
     with:
       dispatch-workflow: ${{ needs.meta.outputs.has-release-tags != 'true' && inputs.first-release-dispatch-workflow || '' }}
       fail-on-no-release: ${{ inputs.fail-on-no-release == true }}
+    secrets: inherit

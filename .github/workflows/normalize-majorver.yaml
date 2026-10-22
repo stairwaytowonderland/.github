@@ -7,7 +7,7 @@ on:
         description: 'GitHub Personal Access Token with repo scope for creating releases.'
 
 permissions:
-  contents: write
+  contents: read
 
 # Use PAT instead of GITHUB_TOKEN to cause semantic-release to trigger tag pipeline when tag is created.
 # 'Fine-grained token' repo permissions: Contents
@@ -16,6 +16,8 @@ jobs:
   normalize-majorver:
     name: Normalize Major Version Tag
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: stairwaytowonderland/normalize-majorver@v1
         with:

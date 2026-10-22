@@ -38,10 +38,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name != 'push' }}
 
 permissions:
-  actions: write
-  contents: write
-  issues: write
-  pull-requests: write
+  contents: read
 
 # Use PAT instead of GITHUB_TOKEN to cause semantic-release to trigger tag pipeline when tag is created.
 # 'Fine-grained token' repo permissions: Contents
@@ -57,9 +54,14 @@ jobs:
       ignore-events: ${{ inputs.ignore-events }}
 
   package-update:
-    name: Update packages
     needs: [check-changed]
+    name: Update packages
     if: needs.check-changed.outputs.result == 'true'
+    permissions:
+      actions: write
+      contents: write
+      issues: write
+      pull-requests: write
     runs-on: ubuntu-latest
 
     steps:

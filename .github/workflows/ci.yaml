@@ -115,10 +115,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'push' }}
 
 permissions:
-  actions: write
-  contents: write
-  issues: write
-  pull-requests: write
+  contents: read
 
 jobs:
   info:
@@ -135,11 +132,16 @@ jobs:
     needs: [info]
     if: needs.info.outputs.is-release-workflow == 'true'
     uses: ./.github/workflows/release.yaml
-    secrets: inherit
+    permissions:
+      actions: write
+      contents: write
+      issues: write
+      pull-requests: write
     with:
       # action-ref: ${{ inputs.action-ref }}
       dispatch-workflow: ${{ needs.info.outputs.has-release-tags != 'true' && inputs.first-release-dispatch-workflow || '' }}
       fail-on-no-release: ${{ inputs.fail-on-no-release == true }}
+    secrets: inherit
 
   # publish-debug:
   #   name: Publish Debug Info
@@ -173,12 +175,12 @@ jobs:
     uses: ./.github/workflows/publish.yaml
     permissions:
       contents: write
-    secrets: inherit
     with:
       # action-ref: ${{ inputs.action-ref }}
       tag: ${{ inputs.tag || github.ref_name }}
       notes-b64: ${{ inputs.notes-b64 }}
       normalize-majorver: ${{ github.repository == 'stairwaytowonderland/.github' || inputs.normalize-majorver == true }}
+    secrets: inherit
 
   # normalize-majorver:
   #   name: Normalize Major Version Tag

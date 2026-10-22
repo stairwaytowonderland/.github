@@ -40,6 +40,9 @@ on:
       github-token:
         description: 'GitHub Personal Access Token with repo scope for creating issues.'
 
+permissions:
+  contents: read
+
 jobs:
   stargazer:
     # if: inputs.exclude == '' || (inputs.exclude != '' && !contains(inputs.exclude, github.repository))

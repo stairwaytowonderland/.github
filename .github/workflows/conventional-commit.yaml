@@ -21,6 +21,9 @@ on:
         description: 'GitHub App client ID used to generate a fallback token for PR comments.'
         required: false
 
+permissions:
+  contents: read
+
 jobs:
   validate-commits:
     name: Check commit messages

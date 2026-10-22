@@ -38,6 +38,9 @@ on:
         description: 'Whether a new release was published.'
         value: ${{ jobs.publish.outputs.release-published }}
 
+permissions:
+  contents: read
+
 jobs:
   publish:
     name: 📦 Publish GitHub Release

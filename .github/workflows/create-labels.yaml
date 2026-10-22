@@ -14,19 +14,21 @@ on:
         description: 'Whether to update existing labels (e.g. rename, change color/description).'
         type: boolean
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false
-
-permissions:
-  contents: read
-  issues: write
-  pull-requests: write
 
 jobs:
   create-labels:
     name: Create Labels
     uses: stairwaytowonderland/label-management/.github/workflows/create-labels.yaml@v1
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
     secrets: inherit
     with:
       dry-run: ${{ inputs.dry-run == true }}

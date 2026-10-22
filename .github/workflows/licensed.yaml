@@ -29,13 +29,15 @@ on:
         default: '.node-version'
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   licensed:
     name: Check Licenses
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
       - name: Get auth token

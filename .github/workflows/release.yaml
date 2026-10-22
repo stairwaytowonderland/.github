@@ -39,6 +39,9 @@ on:
         description: 'The base64-encoded release notes of the new release.'
         value: ${{ jobs.release.outputs.new-release-notes-base64 }}
 
+permissions:
+  contents: read
+
 # Use PAT instead of GITHUB_TOKEN to cause semantic-release to trigger tag pipeline when tag is created.
 # 'Fine-grained token' repo permissions: Contents
 
