@@ -42,7 +42,7 @@ permissions:
 
 jobs:
   info:
-    name: Gather Info
+    name: 🪏 Gather Info
     runs-on: ubuntu-latest
     outputs:
       is-release-workflow: ${{ steps.set-vars.outputs.is-release-workflow }}

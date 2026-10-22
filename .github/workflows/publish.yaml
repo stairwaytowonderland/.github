@@ -40,7 +40,7 @@ on:
 
 jobs:
   publish:
-    name: Publish GitHub Release
+    name: 📦 Publish GitHub Release
     runs-on: ubuntu-latest
 
     permissions:
