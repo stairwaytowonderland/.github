@@ -29,6 +29,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.event_name != 'push' && format('{0}-{1}', github.repository_id, github.ref_name || github.run_id) }}
+  cancel-in-progress: ${{ github.event_name != 'push' }}
+
 jobs:
   check-changed:
     name: 📂 Check Changed Files
