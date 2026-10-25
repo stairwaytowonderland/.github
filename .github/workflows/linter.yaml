@@ -23,7 +23,7 @@ on:
       superlinter-filter-regex-exclude:
         description: 'The regex pattern to exclude files from the super-linter.'
         type: string
-        default: '(dist/.*|.*\.csv$)'
+        default: '(dist/.*|.*\.csv$|CHANGELOG.md)'
       superlinter-rules-path:
         description: 'The path to the super-linter rules.'
         type: string
