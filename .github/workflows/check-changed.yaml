@@ -20,6 +20,9 @@ on:
         type: string
         # default: |
         #   push
+      only-specified-paths:
+        description: 'Whether to only check the specified paths for changes.'
+        type: boolean
 
     outputs:
       result:
@@ -52,6 +55,7 @@ jobs:
           paths: ${{ inputs.paths }}
           ignore-authors: ${{ inputs.ignore-authors }}
           ignore-events: ${{ inputs.ignore-events }}
+          only-specified-paths: ${{ inputs.only-specified-paths }}
           show-summary: true
 
       - name: Show outputs

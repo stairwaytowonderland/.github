@@ -51,6 +51,7 @@ jobs:
       paths: ${{ inputs.paths }}
       ignore-authors: ${{ inputs.ignore-authors }}
       ignore-events: ${{ inputs.ignore-events }}
+      only-specified-paths: true
 
   package-update:
     needs: [check-changed]
