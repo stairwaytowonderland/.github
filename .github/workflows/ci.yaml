@@ -110,10 +110,6 @@ on:
         description: 'Whether a new release was published.'
         value: ${{ jobs.publish.outputs.release-published }}
 
-concurrency:
-  group: ${{ format('{0}-{1}-{2}-{3}', github.repository_id, github.workflow, github.event_name, github.ref || github.run_id) }}
-  cancel-in-progress: ${{ github.event_name == 'push' }}
-
 permissions:
   contents: read
 
@@ -121,6 +117,9 @@ jobs:
   info:
     name: Gather Info
     uses: ./.github/workflows/ci-meta.yaml
+    concurrency:
+      group: ${{ format('{0}-{1}-{2}-{3}', github.repository_id, github.workflow, github.event_name, github.ref || github.run_id) }}
+      cancel-in-progress: ${{ github.event_name == 'push' }}
     permissions:
       contents: read
     with:

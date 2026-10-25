@@ -33,10 +33,6 @@ on:
     #     description: 'Indicates whether package update would be triggered'
     #     value: ${{ jobs.check-changed.outputs.result == 'true' }}
 
-concurrency:
-  group: ${{ github.event_name != 'push' && format('{0}-{1}', github.repository_id, github.ref_name || github.run_id) }}
-  cancel-in-progress: ${{ github.event_name != 'push' }}
-
 permissions:
   contents: read
 
@@ -48,6 +44,9 @@ jobs:
     name: Check Changed Files
     if: github.event_name == 'push' && ! startsWith(github.ref, 'refs/tags/')
     uses: ./.github/workflows/check-changed.yaml
+    concurrency:
+      group: ${{ github.event_name != 'push' && format('{0}-{1}', github.repository_id, github.ref_name || github.run_id) }}
+      cancel-in-progress: ${{ github.event_name != 'push' }}
     with:
       paths: ${{ inputs.paths }}
       ignore-authors: ${{ inputs.ignore-authors }}
