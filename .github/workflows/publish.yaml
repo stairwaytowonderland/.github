@@ -111,4 +111,4 @@ jobs:
     permissions:
       contents: write
     with:
-      ref: ${{ format('refs/tags/{0}', needs.publish.outputs.release-tag) }}
+      ref: ${{ startsWith(github.ref, 'refs/heads/') && format('refs/tags/{0}', needs.publish.outputs.release-tag) || '' }}
