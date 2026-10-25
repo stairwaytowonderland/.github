@@ -3,6 +3,9 @@ name: Publish a Release
 on:
   workflow_call:
     inputs:
+      ref:
+        description: 'The git reference to release.'
+        type: string
       tag:
         description: 'Tag to release (e.g. v1.2.3)'
         type: string
@@ -110,3 +113,5 @@ jobs:
     uses: ./.github/workflows/normalize-majorver.yaml
     permissions:
       contents: write
+    with:
+      ref: ${{ inputs.ref }}
