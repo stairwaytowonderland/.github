@@ -45,6 +45,7 @@ permissions:
 
 jobs:
   stargazer:
+    name: 🌠 Handle Stargazer
     # if: inputs.exclude == '' || (inputs.exclude != '' && !contains(inputs.exclude, github.repository))
     if: inputs.exclude == '' || (inputs.exclude != '' && inputs.exclude != github.repository)
     runs-on: ubuntu-latest
