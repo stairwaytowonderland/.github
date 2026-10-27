@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   normalize-majorver:
-    name: Normalize Major Version Tag
+    name: 🎉 Normalize Major Version Tag
     runs-on: ubuntu-latest
     permissions:
       contents: write
