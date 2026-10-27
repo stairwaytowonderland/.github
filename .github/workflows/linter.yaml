@@ -61,7 +61,7 @@ permissions:
 
 jobs:
   lint:
-    name: Lint Codebase
+    name: ☂️ Lint Codebase
     runs-on: ubuntu-latest
     permissions:
       contents: read

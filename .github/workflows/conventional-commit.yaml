@@ -26,7 +26,7 @@ permissions:
 
 jobs:
   validate-commits:
-    name: Check commit messages
+    name: 📝 Check commit messages
     runs-on: ubuntu-latest
 
     outputs:

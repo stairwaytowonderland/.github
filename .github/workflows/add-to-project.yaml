@@ -28,7 +28,7 @@ permissions:
 
 jobs:
   add-to-project:
-    name: Add pull requests to project
+    name: 🔭 Add pull requests to project
     runs-on: ubuntu-latest
     steps:
       - name: Authenticate with GitHub token

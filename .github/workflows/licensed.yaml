@@ -33,7 +33,7 @@ permissions:
 
 jobs:
   licensed:
-    name: Check Licenses
+    name: 🌊 Check Licenses
     runs-on: ubuntu-latest
     permissions:
       contents: write
