@@ -13,6 +13,11 @@ on:
         type: string
         required: false
         default: ''
+      owner:
+        description: 'Owner of the repository'
+        type: string
+        required: false
+        default: ${{ github.repository_owner }}
       project-id:
         description: 'Project ID for the dependency project'
         type: string
@@ -45,5 +50,6 @@ jobs:
           dry-run: ${{ inputs.dry-run }}
           project-url: https://github.com/orgs/${{ github.repository_owner }}/projects/${{ inputs.project-id }}
           repo: ${{ inputs.repo }}
+          owner: ${{ inputs.owner }}
           github-token: ${{ steps.auth-token.outputs.token }}
           labeled: dependencies
