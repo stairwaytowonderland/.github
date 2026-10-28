@@ -43,7 +43,7 @@ jobs:
           github-token: ${{ secrets.github-token }}
           app-private-key: ${{ secrets.ORG_PROJECT_MGMT_PRIVATE_KEY }}
           app-client-id: ${{ vars.ORG_PROJECT_MGMT_APP_ID }}
-          repo-owner: ${{ github.repository_owner }}
+          repo-owner: ${{ inputs.owner }}
 
       - uses: stairwaytowonderland/add-to-project@v1
         with:
