@@ -49,7 +49,6 @@ jobs:
         with:
           dry-run: ${{ inputs.dry-run }}
           project-url: https://github.com/orgs/${{ github.repository_owner }}/projects/${{ inputs.project-id }}
-          repo: ${{ inputs.repo }}
           owner: ${{ inputs.owner }}
           github-token: ${{ steps.auth-token.outputs.token }}
           labeled: dependencies
