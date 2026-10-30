@@ -21,7 +21,7 @@ on:
         type: string
         default: '.node-version'
       checkov-version:
-        description: 'The version of Checkov to use.'
+        description: 'The version of Checkov to use; only applicable when superlinter-validate-checkov is false.'
         type: string
         default: 'v12'
       superlinter-version:
@@ -121,6 +121,7 @@ jobs:
   checkov:
     name: 🛡️ Run Checkov
     needs: setup
+    if: ${{ ! inputs.superlinter-validate-checkov }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -146,7 +147,6 @@ jobs:
       - name: Run Checkov
         # uses: bridgecrewio/checkov-action@v12
         run: /entrypoint.sh
-        if: ${{ ! inputs.superlinter-validate-checkov }}
         env:
           INPUT_CONFIG_FILE: ${{ inputs.checkov-file-name }}
 
