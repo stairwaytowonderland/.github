@@ -136,7 +136,7 @@ jobs:
 
       - name: Run Checkov
         uses: bridgecrewio/checkov-action@v12
-        if: ! inputs.superlinter-validate-checkov
+        if: ${{ ! inputs.superlinter-validate-checkov }}
         with:
           config_file: ${{ inputs.checkov-file-name }}
 
@@ -169,7 +169,7 @@ jobs:
           fetch-depth: 0
 
       - name: Copy Linter Rules
-        if: needs.setup.outputs.has-payload == 'true' && inputs.superlinter-copy-rules == 'true'
+        if: ${{ needs.setup.outputs.has-payload == 'true' && inputs.superlinter-copy-rules }}
         env:
           SUPERLINTER_RULES_PATH: ${{ inputs.superlinter-rules-path }}
           GITHUB_LINTER_RULES_PATH: .github/linters
