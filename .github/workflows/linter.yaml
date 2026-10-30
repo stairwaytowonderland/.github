@@ -24,6 +24,10 @@ on:
         description: 'The version of the super-linter to use.'
         type: string
         default: 'v8'
+      superlinter-entrypoint:
+        description: 'The entrypoint script for the super-linter.'
+        type: string
+        default: '/action/lib/linter.sh'
       superlinter-filter-regex-exclude:
         description: 'The regex pattern to exclude files from the super-linter.'
         type: string
@@ -180,8 +184,9 @@ jobs:
 
       - name: Lint Codebase
         id: super-linter
+        # uses: super-linter/super-linter:v8
         # uses: docker://ghcr.io/super-linter/super-linter:v8
-        run: /action/lib/linter.sh
+        run: ${{ inputs.superlinter-entrypoint }}
         env:
           ENABLE_GITHUB_ACTIONS_STEP_SUMMARY: true # default: true
           SAVE_SUPER_LINTER_SUMMARY: true # default: false
