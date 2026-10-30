@@ -63,6 +63,12 @@ on:
       additional-vars:
         required: false
         type: string
+      workspace-payload:
+        description: 'The workspace payload artifact paths to use.'
+        required: false
+        type: string
+        default: |
+          .
 
 permissions:
   contents: read
@@ -108,9 +114,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: workspace-payload
-          path: |
-            .
-            !node_modules/**
+          path: ${{ inputs.workspace-payload }}
           include-hidden-files: true
           retention-days: 1
 
