@@ -74,11 +74,40 @@ permissions:
   contents: read
 
 jobs:
-  setup:
-    name: 🛠️ Prepare Environment
+  checkov:
+    name: 🛡️ Run Checkov
+    if: ${{ ! inputs.superlinter-validate-checkov }}
     runs-on: ubuntu-latest
-    outputs:
-      has-payload: ${{ steps.check-if-node.outputs.setup-node }}
+    strategy:
+      matrix:
+        version: ['${{ inputs.checkov-version }}']
+    container:
+      image: ghcr.io/bridgecrewio/checkov-action:${{ matrix.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Run Checkov
+        # uses: bridgecrewio/checkov-action@v12
+        run: /entrypoint.sh
+        env:
+          INPUT_CONFIG_FILE: ${{ inputs.checkov-file-name }}
+
+  lint:
+    name: 🧹 Lint Codebase
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: ['${{ inputs.superlinter-version }}']
+    container:
+      image: ghcr.io/super-linter/super-linter:${{ matrix.version }}
+    permissions:
+      contents: read
+      packages: read
+      statuses: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -109,77 +138,8 @@ jobs:
         if: steps.check-if-node.outputs.setup-node == 'true'
         run: npm ci
 
-      - name: Upload Workspace Payload
-        if: steps.check-if-node.outputs.setup-node == 'true'
-        uses: actions/upload-artifact@v7
-        with:
-          name: workspace-payload
-          path: ${{ inputs.workspace-payload }}
-          include-hidden-files: true
-          retention-days: 1
-
-  checkov:
-    name: 🛡️ Run Checkov
-    needs: setup
-    if: ${{ ! inputs.superlinter-validate-checkov }}
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        version: ['${{ inputs.checkov-version }}']
-    container:
-      image: ghcr.io/bridgecrewio/checkov-action:${{ matrix.version }}
-    steps:
-      # If setup built the environment, download the workspace payload
-      - name: Download Workspace Payload
-        if: needs.setup.outputs.has-payload == 'true'
-        uses: actions/download-artifact@v8
-        with:
-          name: workspace-payload
-          path: .
-
-      # If setup was bypassed/skipped node execution, fetch codebase freshly
-      - name: Checkout
-        if: needs.setup.outputs.has-payload != 'true'
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - name: Run Checkov
-        # uses: bridgecrewio/checkov-action@v12
-        run: /entrypoint.sh
-        env:
-          INPUT_CONFIG_FILE: ${{ inputs.checkov-file-name }}
-
-  lint:
-    name: 🧹 Lint Codebase
-    needs: setup
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        version: ['${{ inputs.superlinter-version }}']
-    container:
-      image: ghcr.io/super-linter/super-linter:${{ matrix.version }}
-    permissions:
-      contents: read
-      packages: read
-      statuses: write
-
-    steps:
-      - name: Download Workspace Payload
-        if: needs.setup.outputs.has-payload == 'true'
-        uses: actions/download-artifact@v8
-        with:
-          name: workspace-payload
-          path: .
-
-      - name: Checkout
-        if: needs.setup.outputs.has-payload != 'true'
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
       - name: Copy Linter Rules
-        if: ${{ needs.setup.outputs.has-payload == 'true' && inputs.superlinter-copy-rules }}
+        if: ${{ steps.check-if-node.outputs.setup-node == 'true' && inputs.superlinter-copy-rules }}
         env:
           SUPERLINTER_RULES_PATH: ${{ inputs.superlinter-rules-path }}
           GITHUB_LINTER_RULES_PATH: .github/linters
