@@ -23,7 +23,7 @@ on:
       checkov-version:
         description: 'The version of the Checkov docker image to use; only applicable when superlinter-validate-checkov is false.'
         type: string
-        default: '3.4.0'
+        default: ''
       superlinter-version:
         description: 'The version of the super-linter docker image to use.'
         type: string
@@ -74,26 +74,26 @@ permissions:
   contents: read
 
 jobs:
-  checkov:
-    name: 🛡️ Run Checkov
-    if: ${{ ! inputs.superlinter-validate-checkov }}
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        version: ['${{ inputs.checkov-version }}']
-    container:
-      image: ghcr.io/bridgecrewio/checkov-action:${{ matrix.version }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
+  # checkov:
+  #   name: 🛡️ Run Checkov
+  #   if: ${{ ! inputs.superlinter-validate-checkov }}
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       version: ['${{ inputs.checkov-version }}']
+  #   container:
+  #     image: ghcr.io/bridgecrewio/checkov-action:${{ matrix.version }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v7
+  #       with:
+  #         fetch-depth: 0
 
-      - name: Run Checkov
-        # uses: bridgecrewio/checkov-action@v12
-        run: /entrypoint.sh
-        env:
-          INPUT_CONFIG_FILE: ${{ inputs.checkov-file-name }}
+  #     - name: Run Checkov
+  #       # uses: bridgecrewio/checkov-action@v12
+  #       run: /entrypoint.sh
+  #       env:
+  #         INPUT_CONFIG_FILE: ${{ inputs.checkov-file-name }}
 
   lint:
     name: 🧹 Lint Codebase
@@ -208,3 +208,17 @@ jobs:
             sudo cat "${SUPERLINTER_LOG_FILE}"
             sudo rm -v "${SUPERLINTER_LOG_FILE}"
           fi
+
+      - name: Run Checkov
+        if: ${{ inputs.superlinter-validate-checkov == false }}
+        env:
+          CHECKOV_VERSION: ${{ inputs.checkov-version }}
+          CHECKOV_FILE_NAME: ${{ inputs.checkov-file-name }}
+        run: |
+          # 1. Dynamically upgrade or pin Checkov to your exact required version on the fly
+          if [ -n "${CHECKOV_VERSION}" ]; then
+            pip install --no-cache-dir --break-system-packages checkov==${CHECKOV_VERSION}
+          fi
+
+          # 2. Execute the pinned tool version cleanly using your configuration file
+          checkov --config-file "${CHECKOV_FILE_NAME}"
