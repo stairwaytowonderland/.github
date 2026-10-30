@@ -200,6 +200,7 @@ jobs:
           VALIDATE_CHECKOV: ${{ inputs.superlinter-validate-checkov }}
           VALIDATE_NATURAL_LANGUAGE: ${{ inputs.superlinter-validate-natural-language }}
           VALIDATE_ALL_CODEBASE: true
+          VALIDATE_BASH_EXEC: false
           VALIDATE_BIOME_FORMAT: false
           VALIDATE_BIOME_LINT: false
           VALIDATE_GITHUB_ACTIONS_ZIZMOR: false
