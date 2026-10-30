@@ -20,14 +20,14 @@ on:
         description: 'The Node.js version file to use.'
         type: string
         default: '.node-version'
+      checkov-version:
+        description: 'The version of Checkov to use.'
+        type: string
+        default: 'v12'
       superlinter-version:
         description: 'The version of the super-linter to use.'
         type: string
         default: 'v8'
-      superlinter-entrypoint:
-        description: 'The entrypoint script for the super-linter.'
-        type: string
-        default: '/action/lib/linter.sh'
       superlinter-filter-regex-exclude:
         description: 'The regex pattern to exclude files from the super-linter.'
         type: string
@@ -122,6 +122,11 @@ jobs:
     name: 🛡️ Run Checkov
     needs: setup
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: ['${{ inputs.checkov-version }}']
+    container:
+      image: bridgecrewio/checkov-action:${{ matrix.version }}
     steps:
       # If setup built the environment, download the workspace payload
       - name: Download Workspace Payload
@@ -139,10 +144,11 @@ jobs:
           fetch-depth: 0
 
       - name: Run Checkov
-        uses: bridgecrewio/checkov-action@v12
+        # uses: bridgecrewio/checkov-action@v12
+        run: /entrypoint.sh
         if: ${{ ! inputs.superlinter-validate-checkov }}
-        with:
-          config_file: ${{ inputs.checkov-file-name }}
+        env:
+          INPUT_CONFIG_FILE: ${{ inputs.checkov-file-name }}
 
   lint:
     name: ☂️ Lint Codebase
@@ -205,7 +211,7 @@ jobs:
         id: super-linter
         # uses: super-linter/super-linter:v8
         # uses: docker://ghcr.io/super-linter/super-linter:v8
-        run: ${{ inputs.superlinter-entrypoint }}
+        run: /action/lib/linter.sh
         env:
           ENABLE_GITHUB_ACTIONS_STEP_SUMMARY: true # default: true
           SAVE_SUPER_LINTER_SUMMARY: true # default: false
