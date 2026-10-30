@@ -151,7 +151,7 @@ jobs:
           INPUT_CONFIG_FILE: ${{ inputs.checkov-file-name }}
 
   lint:
-    name: ☂️ Lint Codebase
+    name: 🧹 Lint Codebase
     needs: setup
     runs-on: ubuntu-latest
     strategy:
