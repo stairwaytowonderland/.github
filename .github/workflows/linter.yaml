@@ -127,7 +127,7 @@ jobs:
       matrix:
         version: ['${{ inputs.checkov-version }}']
     container:
-      image: bridgecrewio/checkov-action:${{ matrix.version }}
+      image: ghcr.io/bridgecrewio/checkov-action:${{ matrix.version }}
     steps:
       # If setup built the environment, download the workspace payload
       - name: Download Workspace Payload
