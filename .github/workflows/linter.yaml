@@ -53,7 +53,7 @@ on:
         type: boolean
         default: false
       superlinter-copy-rules:
-        description: 'Whether to copy super-linter rules.'
+        description: 'Whether to copy super-linter rules; only applicable when node-version-file is specified.'
         type: boolean
         default: false
       superlinter-log-file:
@@ -71,6 +71,8 @@ jobs:
   setup:
     name: 🛠️ Prepare Environment
     runs-on: ubuntu-latest
+    outputs:
+      has-payload: ${{ steps.check-if-node.outputs.setup-node }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -82,16 +84,15 @@ jobs:
         env:
           NODE_VERSION_FILE: ${{ inputs.node-version-file }}
         run: |
-          if [ -f "$NODE_VERSION_FILE" ]; then
+          if [ -n "$NODE_VERSION_FILE" ] && [ -f "$NODE_VERSION_FILE" ]; then
             echo "Node.js version file found: $NODE_VERSION_FILE"
             echo "setup-node=true" >> $GITHUB_OUTPUT
           else
-            echo "Node.js version file not found: $NODE_VERSION_FILE"
+            echo "Node.js version file not found or empty: $NODE_VERSION_FILE"
             echo "setup-node=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Setup Node.js
-        id: setup-node
         if: steps.check-if-node.outputs.setup-node == 'true'
         uses: actions/setup-node@v7
         with:
@@ -99,27 +100,11 @@ jobs:
           cache: ${{ inputs.node-cache-key }}
 
       - name: Install Dependencies
-        id: install
         if: steps.check-if-node.outputs.setup-node == 'true'
         run: npm ci
 
-      - name: Copy Linter Rules
-        if: steps.check-if-node.outputs.setup-node == 'true' && inputs.superlinter-copy-rules == 'true'
-        env:
-          SUPERLINTER_RULES_PATH: ${{ inputs.superlinter-rules-path }}
-          GITHUB_LINTER_RULES_PATH: .github/linters
-        run: |
-          old_dir="${GITHUB_WORKSPACE%/}"
-          new_workspace="${GITHUB_WORKSPACE%/}/${SUPERLINTER_RULES_PATH%/}"
-          new_dir="${new_workspace%/}/${GITHUB_LINTER_RULES_PATH%/}"
-          if [ ! -d "${new_dir}" ]; then
-            mkdir -p "${new_dir}"
-          fi
-          cp "${old_dir}/".prettier* "${new_dir}/"
-          echo "Copied linter rules from '${old_dir}' to '${new_dir}'"
-          ls -la "${new_dir}"
-
       - name: Upload Workspace Payload
+        if: steps.check-if-node.outputs.setup-node == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: workspace-payload
@@ -134,15 +119,20 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
+      # If setup built the environment, download the workspace payload
       - name: Download Workspace Payload
+        if: needs.setup.outputs.has-payload == 'true'
         uses: actions/download-artifact@v8
         with:
           name: workspace-payload
           path: .
 
-      # - name: Run Checkov
-      #   if: ! inputs.superlinter-validate-checkov
-      #   run: checkov --config-file "${{ inputs.checkov-file-name }}"
+      # If setup was bypassed/skipped node execution, fetch codebase freshly
+      - name: Checkout
+        if: needs.setup.outputs.has-payload != 'true'
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Run Checkov
         uses: bridgecrewio/checkov-action@v12
@@ -166,10 +156,33 @@ jobs:
 
     steps:
       - name: Download Workspace Payload
+        if: needs.setup.outputs.has-payload == 'true'
         uses: actions/download-artifact@v8
         with:
           name: workspace-payload
           path: .
+
+      - name: Checkout
+        if: needs.setup.outputs.has-payload != 'true'
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Copy Linter Rules
+        if: needs.setup.outputs.has-payload == 'true' && inputs.superlinter-copy-rules == 'true'
+        env:
+          SUPERLINTER_RULES_PATH: ${{ inputs.superlinter-rules-path }}
+          GITHUB_LINTER_RULES_PATH: .github/linters
+        run: |
+          old_dir="${GITHUB_WORKSPACE%/}"
+          new_workspace="${GITHUB_WORKSPACE%/}/${SUPERLINTER_RULES_PATH%/}"
+          new_dir="${new_workspace%/}/${GITHUB_LINTER_RULES_PATH%/}"
+          if [ ! -d "${new_dir}" ]; then
+            mkdir -p "${new_dir}"
+          fi
+          cp "${old_dir}/".prettier* "${new_dir}/"
+          echo "Copied linter rules from '${old_dir}' to '${new_dir}'"
+          ls -la "${new_dir}"
 
       - name: Export Additional Environment Variables
         if: ${{ inputs.additional-vars != '' }}
@@ -225,8 +238,3 @@ jobs:
             sudo cat "${SUPERLINTER_LOG_FILE}"
             sudo rm -v "${SUPERLINTER_LOG_FILE}"
           fi
-
-      # - name: Run Checkov
-      #   if: ! inputs.superlinter-validate-checkov
-      #   run: |
-      #     checkov --config-file "${{ inputs.checkov-file-name }}"
