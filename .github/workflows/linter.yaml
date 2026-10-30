@@ -21,11 +21,11 @@ on:
         type: string
         default: '.node-version'
       checkov-version:
-        description: 'The version of Checkov to use; only applicable when superlinter-validate-checkov is false.'
+        description: 'The version of the Checkov docker image to use; only applicable when superlinter-validate-checkov is false.'
         type: string
-        default: 'v12'
+        default: '3.4.0'
       superlinter-version:
-        description: 'The version of the super-linter to use.'
+        description: 'The version of the super-linter docker image to use.'
         type: string
         default: 'v8'
       superlinter-filter-regex-exclude:
