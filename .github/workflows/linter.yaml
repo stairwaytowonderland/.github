@@ -20,14 +20,6 @@ on:
         description: 'The Node.js version file to use.'
         type: string
         default: '.node-version'
-      checkov-version:
-        description: 'The version of the Checkov docker image to use; only applicable when superlinter-validate-checkov is false.'
-        type: string
-        default: '3' # 3.4.0
-      superlinter-version:
-        description: 'The version of the super-linter docker image to use.'
-        type: string
-        default: 'v8'
       superlinter-filter-regex-exclude:
         description: 'The regex pattern to exclude files from the super-linter.'
         type: string
@@ -63,12 +55,6 @@ on:
       additional-vars:
         required: false
         type: string
-      workspace-payload:
-        description: 'The workspace payload artifact paths to use.'
-        required: false
-        type: string
-        default: |
-          .
 
 permissions:
   contents: read
@@ -80,7 +66,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        version: ['${{ inputs.checkov-version }}']
+        version: ['3']
     container:
       image: bridgecrew/checkov:${{ matrix.version }}
     steps:
@@ -98,11 +84,11 @@ jobs:
   lint:
     name: ☂️ Lint Codebase
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        version: ['${{ inputs.superlinter-version }}']
-    container:
-      image: ghcr.io/super-linter/super-linter:${{ matrix.version }}
+    # strategy:
+    #   matrix:
+    #     version: ['v9']
+    # container:
+    #   image: ghcr.io/super-linter/super-linter:${{ matrix.version }}
     permissions:
       contents: read
       packages: read
@@ -169,9 +155,8 @@ jobs:
 
       - name: Lint Codebase
         id: super-linter
-        # uses: super-linter/super-linter:v8
-        # uses: docker://ghcr.io/super-linter/super-linter:v8
-        run: /action/lib/linter.sh
+        uses: super-linter/super-linter@v9
+        # run: /action/lib/linter.sh
         env:
           ENABLE_GITHUB_ACTIONS_STEP_SUMMARY: true # default: true
           SAVE_SUPER_LINTER_SUMMARY: true # default: false
@@ -222,3 +207,9 @@ jobs:
 
       #     # 2. Execute the pinned tool version cleanly using your configuration file
       #     checkov --config-file "${CHECKOV_FILE_NAME}"
+
+      # - name: Run Checkov
+      #   uses: bridgecrewio/checkov-action@v12
+      #   if: ${{ ! inputs.superlinter-validate-checkov }}
+      #   with:
+      #     config_file: ${{ inputs.checkov-file-name }}
