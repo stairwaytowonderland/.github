@@ -150,7 +150,6 @@ jobs:
             fi
 
             if [ -n "$outfile" ]; then
-              find . -name .prettierrc -o -name .prettierrc.json | wc -l | xargs echo
               node -e "import('$PRETTIERRC').then(m => console.log(JSON.stringify(m.default || m, null, 2)))" > "$outfile"
             fi
 
