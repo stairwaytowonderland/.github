@@ -119,16 +119,15 @@ jobs:
 
       - name: Update Environment
         run: |
-          oldapk=$(apk version)
+          currentalpine=$(cat /etc/alpine-release)
           oldnode=$(node -v)
           oldnpm=$(npm -v)
           oldpy=$(python3 --version 2>/dev/null || echo "not installed")
           apk update && apk upgrade --available
-          newapk=$(apk version)
           newnode=$(node -v)
           newnpm=$(npm -v)
           newpy=$(python3 --version 2>/dev/null || echo "not installed")
-          printf "Previous APK version: %s, Current APK version: %s\n" "$oldapk" "$newapk"
+          printf "Current APK version: %s\n" "$currentalpine"
           printf "Previous Node.js version: %s, Current Node.js version: %s\n" "$oldnode" "$newnode"
           printf "Previous NPM version: %s, Current NPM version: %s\n" "$oldnpm" "$newnpm"
           printf "Previous Python version: %s, Current Python version: %s\n" "$oldpy" "$newpy"
