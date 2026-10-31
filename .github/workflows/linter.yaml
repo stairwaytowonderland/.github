@@ -141,7 +141,18 @@ jobs:
               npm install --save-dev @github/prettier-config
             fi
             echo "Processing Prettier config: $PRETTIERRC"
-            node -e "import('$PRETTIERRC').then(m => console.log(JSON.stringify(m.default || m, null, 2)))" > .prettierrc.json
+
+            outfile=
+            if [ ! -f ".prettierrc" ]; then
+              outfile=".prettierrc"
+            elif [ ! -f ".prettierrc.json" ]; then
+              outfile=".prettierrc.json"
+            fi
+
+            if [ -n "$outfile" ]; then
+              find . -name .prettierrc -o -name .prettierrc.json | wc -l | xargs echo
+              node -e "import('$PRETTIERRC').then(m => console.log(JSON.stringify(m.default || m, null, 2)))" > "$outfile"
+            fi
           fi
 
       # - name: Copy Linter Rules
