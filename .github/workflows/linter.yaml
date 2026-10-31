@@ -153,6 +153,10 @@ jobs:
               find . -name .prettierrc -o -name .prettierrc.json | wc -l | xargs echo
               node -e "import('$PRETTIERRC').then(m => console.log(JSON.stringify(m.default || m, null, 2)))" > "$outfile"
             fi
+
+            if [ -r "$outfile" ]; then
+              cat "$outfile"
+            fi
           fi
 
       # - name: Copy Linter Rules
