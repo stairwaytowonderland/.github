@@ -119,19 +119,33 @@ jobs:
 
       - name: Update Environment
         run: |
+          clean_str() { echo "$1" | grep -oE '[0-9\.]*$'; }
           currentalpine=$(cat /etc/alpine-release)
-          oldnode=$(node -v)
-          oldnpm=$(npm -v)
-          oldpy=$(python3 --version 2>/dev/null || echo "not installed")
+          oldnode=$(clean_str "$(node -v)")
+          oldnpm=$(clean_str "$(npm -v)")
+          oldpy=$(clean_str "$(python3 --version 2>/dev/null || echo "not installed")")
           apk update && apk upgrade --available
-          apk add --no-cache findutils
-          newnode=$(node -v)
-          newnpm=$(npm -v)
-          newpy=$(python3 --version 2>/dev/null || echo "not installed")
-          printf "Current APK version: %s\n" "$currentalpine"
-          printf "Previous Node.js version: %s, Current Node.js version: %s\n" "$oldnode" "$newnode"
-          printf "Previous NPM version: %s, Current NPM version: %s\n" "$oldnpm" "$newnpm"
-          printf "Previous Python version: %s, Current Python version: %s\n" "$oldpy" "$newpy"
+          apk add --no-cache findutils jq
+          newnode=$(clean_str "$(node -v)")
+          newnpm=$(clean_str "$(npm -v)")
+          newpy=$(clean_str "$(python3 --version 2>/dev/null || echo "not installed")")
+          old_env_json=$(jq -n \
+            --arg node "$oldnode" \
+            --arg npm "$oldnpm" \
+            --arg python "$oldpy" \
+            '{node: $node, npm: $npm, python: $python}')
+          new_env_json=$(jq -n \
+            --arg node "$newnode" \
+            --arg npm "$newnpm" \
+            --arg python "$newpy" \
+            '{node: $node, npm: $npm, python: $python}')
+          env_json=$(jq -n \
+            --arg currentalpine "$currentalpine" \
+            --argjson old "$old_env_json" \
+            --argjson new "$new_env_json" \
+            '{os: {alpine: $currentalpine}, packages: {previous: $old, current: $new}}')
+
+          printf "%s\n" "$env_json"
 
       # - name: Setup Node.js
       #   if: steps.check-if-node.outputs.setup-node == 'true'
