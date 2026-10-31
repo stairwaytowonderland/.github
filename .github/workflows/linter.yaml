@@ -132,9 +132,9 @@ jobs:
         if: steps.check-if-node.outputs.setup-node == 'true' && inputs.generate-prettier-config
         run: |
           # Use POSIX extended regex for finding Prettier config files
-          # If on macOS or BSD, use -E instead of -regextype posix-extended
+          # If on macOS or BSD, use -E (before the path arg) instead of -regextype posix-extended (which should be after the path arg)
           # Example: PRETTIERRC=$(find -E . -maxdepth 1 -regex '.*\.?prettierrc\.(mjs|cjs|js)')
-          PRETTIERRC=$(find -regextype posix-extended . -maxdepth 1 -regex '.*\.?prettierrc\.(mjs|cjs|js)')
+          PRETTIERRC=$(find . -regextype posix-extended -maxdepth 1 -regex '.*\.?prettierrc\.(mjs|cjs|js)')
           if [ -r "$PRETTIERRC" ]; then
             if ! npm list @github/prettier-config > /dev/null 2>&1; then
               echo "Installing @github/prettier-config"
