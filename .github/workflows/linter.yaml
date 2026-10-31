@@ -44,14 +44,18 @@ on:
         description: 'Whether to validate natural language files with the super-linter.'
         type: boolean
         default: false
-      superlinter-copy-rules:
-        description: 'Whether to copy super-linter rules; only applicable when node-version-file is specified.'
-        type: boolean
-        default: false
       superlinter-log-file:
         description: 'The name of the log file for the super-linter. Set to an empty string to disable logging.'
         type: string
         default: '' # super-linter.log
+      copy-linter-rules:
+        description: 'Whether to copy super-linter rules; only applicable when node-version-file is specified.'
+        type: boolean
+        default: false
+      generate-prettier-config:
+        description: 'Whether to generate a static Prettier config with the super-linter.'
+        type: boolean
+        default: true
       additional-vars:
         required: false
         type: string
@@ -125,11 +129,14 @@ jobs:
         run: npm ci
 
       - name: Generate Static Prettier Config
-        if: steps.check-if-node.outputs.setup-node == 'true'
+        if: steps.check-if-node.outputs.setup-node == 'true' && inputs.generate-prettier-config
         run: |
-          PRETTIERRC=$(find -E . -maxdepth 1 -regex '.*\.?prettierrc\.(mjs|cjs|js)')
+          # Use POSIX extended regex for finding Prettier config files
+          # If on macOS or BSD, use -E instead of -regextype posix-extended
+          # Example: PRETTIERRC=$(find -E . -maxdepth 1 -regex '.*\.?prettierrc\.(mjs|cjs|js)')
+          PRETTIERRC=$(find -regextype posix-extended . -maxdepth 1 -regex '.*\.?prettierrc\.(mjs|cjs|js)')
           if [ -r "$PRETTIERRC" ]; then
-            if ! $(npm list @github/prettier-config > /dev/null); then
+            if ! npm list @github/prettier-config > /dev/null 2>&1; then
               echo "Installing @github/prettier-config"
               npm install --save-dev @github/prettier-config
             fi
@@ -138,7 +145,7 @@ jobs:
           fi
 
       # - name: Copy Linter Rules
-      #   if: ${{ steps.check-if-node.outputs.setup-node == 'true' && inputs.superlinter-copy-rules }}
+      #   if: ${{ steps.check-if-node.outputs.setup-node == 'true' && inputs.copy-linter-rules }}
       #   env:
       #     SUPERLINTER_RULES_PATH: ${{ inputs.superlinter-rules-path }}
       #     GITHUB_LINTER_RULES_PATH: .github/linters
