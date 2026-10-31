@@ -124,6 +124,7 @@ jobs:
           oldnpm=$(npm -v)
           oldpy=$(python3 --version 2>/dev/null || echo "not installed")
           apk update && apk upgrade --available
+          apk add --no-cache findutils
           newnode=$(node -v)
           newnpm=$(npm -v)
           newpy=$(python3 --version 2>/dev/null || echo "not installed")
