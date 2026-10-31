@@ -37,7 +37,6 @@ Public organization info.
 │   │   ├── create-labels.yaml
 │   │   ├── docker-aws-ecr.yaml
 │   │   ├── licensed.yaml
-│   │   ├── linter-nodejs.yaml
 │   │   ├── linter.yaml
 │   │   ├── normalize-majorver.yaml
 │   │   ├── npm-check-dist.yaml
