@@ -32,6 +32,10 @@ on:
         description: 'Whether to validate editorconfig files with the super-linter.'
         type: boolean
         default: true
+      superlinter-validate-html:
+        description: 'Whether to validate HTML files with the super-linter.'
+        type: boolean
+        default: false
       superlinter-validate-prettier:
         description: 'Whether to validate TypeScript files with Prettier using the super-linter.'
         type: boolean
@@ -234,14 +238,15 @@ jobs:
           VALIDATE_CHECKOV: ${{ inputs.superlinter-validate-checkov }}
           VALIDATE_NATURAL_LANGUAGE: ${{ inputs.superlinter-validate-natural-language }}
           VALIDATE_ALL_CODEBASE: true
-          VALIDATE_BASH_EXEC: false
+          VALIDATE_BASH_EXEC: ${{ env.VALIDATE_BASH_EXEC || false }}
           VALIDATE_BIOME_FORMAT: false
           VALIDATE_BIOME_LINT: false
           VALIDATE_GITHUB_ACTIONS_ZIZMOR: false
           VALIDATE_JAVASCRIPT_ES: false
           VALIDATE_JSCPD: false
           VALIDATE_TYPESCRIPT_ES: false
-          VALIDATE_JSON: false
+          VALIDATE_JSON: ${{ env.VALIDATE_JSON || false }}
+          VALIDATE_HTML: ${{ env.VALIDATE_HTML || inputs.superlinter-validate-html || false }}
 
           # Force Super-Linter to write out the raw Prettier error diff logs
           CREATE_LOG_FILE: ${{ inputs.superlinter-log-file != '' }}
