@@ -247,6 +247,7 @@ jobs:
           VALIDATE_TYPESCRIPT_ES: false
           VALIDATE_JSON: ${{ env.VALIDATE_JSON || false }}
           VALIDATE_HTML: ${{ env.VALIDATE_HTML || inputs.superlinter-validate-html || false }}
+          VALIDATE_CSS: ${{ env.VALIDATE_CSS || false }}
 
           # Force Super-Linter to write out the raw Prettier error diff logs
           CREATE_LOG_FILE: ${{ inputs.superlinter-log-file != '' }}
