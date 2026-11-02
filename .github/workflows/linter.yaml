@@ -31,7 +31,7 @@ on:
       superlinter-validate-editorconfig:
         description: 'Whether to validate editorconfig files with the super-linter.'
         type: boolean
-        default: true
+        default: false
       superlinter-validate-html:
         description: 'Whether to validate HTML files with the super-linter.'
         type: boolean
